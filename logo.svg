@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 240" role="img" aria-labelledby="title desc">
+  <title id="title">tempo-cli logo</title>
+  <desc id="desc">A compact terminal clock mark followed by the tempo-cli wordmark.</desc>
+  <rect width="920" height="240" rx="28" fill="#0b1726"/>
+  <g transform="translate(42 42)">
+    <rect width="156" height="156" rx="34" fill="#16b3a3"/>
+    <path d="M39 66h78M39 91h52M39 116h29" fill="none" stroke="#0b1726" stroke-linecap="round" stroke-width="11"/>
+    <path d="M108 105l17 17 30-36" fill="none" stroke="#f5f7fa" stroke-linecap="round" stroke-linejoin="round" stroke-width="11"/>
+    <circle cx="78" cy="28" r="7" fill="#f5f7fa"/>
+  </g>
+  <g fill="#f5f7fa" font-family="Inter,Segoe UI,Arial,sans-serif">
+    <text x="238" y="142" font-size="92" font-weight="700" letter-spacing="1">tempo-cli</text>
+    <circle cx="706" cy="116" r="8" fill="#f36f56"/>
+  </g>
+</svg>
