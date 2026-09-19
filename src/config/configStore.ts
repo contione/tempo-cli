@@ -42,7 +42,7 @@ export default {
             if ((error as { code?: string }).code === 'ENOENT') {
                 return emptyConfig()
             }
-            throw Error('The tempo-cli configuration file is unreadable or invalid. Run setup after fixing it.')
+            throw Error('The tempo-cli configuration file is unreadable or invalid. Run `tempo setup` after fixing it.')
         }
     }
 }

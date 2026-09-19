@@ -23,8 +23,6 @@ A focused command-line client for Tempo Cloud and Jira. Record worklogs, review 
 ```bash
 npm install --global @contione/tempo-cli
 
-tempo-cli --help
-# The shorter binary name is also available:
 tempo --help
 ```
 
@@ -33,7 +31,7 @@ tempo --help
 Run setup once before using commands that access Jira or Tempo:
 
 ```bash
-tempo-cli setup
+tempo setup
 ```
 
 The setup flow asks for:
@@ -53,16 +51,16 @@ The following examples use sample issue keys and worklog IDs:
 
 ```bash
 # Record a duration with a description.
-tempo-cli log NOVA-318 1h20m --description "Investigated webhook retries"
+tempo log NOVA-318 1h20m --description "Investigated webhook retries"
 
 # Record an explicit interval on a specific date.
-tempo-cli log NOVA-318 09:40-11:00 2026-09-18
+tempo log NOVA-318 09:40-11:00 2026-09-18
 
 # Review the selected day and include descriptions and issue links.
-tempo-cli list 2026-09-18 --verbose
+tempo list 2026-09-18 --verbose
 
 # Delete one or more worklogs.
-tempo-cli delete 931842 931859
+tempo delete 931842 931859
 ```
 
 A successful log prints the recorded duration, issue key, and a delete command for the new worklog.
@@ -78,18 +76,18 @@ Durations include `30m`, `2h`, and `1h15m`. Intervals include `09:40-11:00`, `9-
 Trackers are stored locally until they are stopped. Each interval is uploaded as a separate Tempo worklog. Successful intervals are removed immediately; failed intervals remain available for a later retry.
 
 ```bash
-tempo-cli tracker:start NOVA-318 --description "Release investigation"
-tempo-cli tracker:pause NOVA-318
-tempo-cli tracker:resume NOVA-318
-tempo-cli tracker:list
-tempo-cli tracker:stop NOVA-318 --remaining-estimate 2h
-tempo-cli tracker:delete NOVA-318
+tempo tracker:start NOVA-318 --description "Release investigation"
+tempo tracker:pause NOVA-318
+tempo tracker:resume NOVA-318
+tempo tracker:list
+tempo tracker:stop NOVA-318 --remaining-estimate 2h
+tempo tracker:delete NOVA-318
 ```
 
 Use `--stop-previous` to finish an existing tracker before starting another one for the same issue:
 
 ```bash
-tempo-cli tracker:start NOVA-318 --stop-previous
+tempo tracker:start NOVA-318 --stop-previous
 ```
 
 The short tracker aliases are `start`, `pause`, `resume`, and `stop`.
@@ -97,10 +95,10 @@ The short tracker aliases are `start`, `pause`, `resume`, and `stop`.
 ## Issue Aliases
 
 ```bash
-tempo-cli alias:set release NOVA-318
-tempo-cli log release 20m --description "Release checklist"
-tempo-cli alias:list
-tempo-cli alias:delete release
+tempo alias:set release NOVA-318
+tempo log release 20m --description "Release checklist"
+tempo alias:list
+tempo alias:delete release
 ```
 
 Aliases can be used anywhere an issue key is accepted, including all tracker commands.
@@ -129,11 +127,11 @@ Every action command supports `--help`; commands that call an API also support `
 ## Completion and Help
 
 ```bash
-tempo-cli help tracker:stop
-tempo-cli help --nested-commands
-tempo-cli autocomplete
-tempo-cli autocomplete zsh
-tempo-cli autocomplete --refresh-cache
+tempo help tracker:stop
+tempo help --nested-commands
+tempo autocomplete
+tempo autocomplete zsh
+tempo autocomplete --refresh-cache
 ```
 
 ## Development
@@ -151,7 +149,7 @@ npm run release:check
 Run the built CLI locally with:
 
 ```bash
-node bin/run --help
+tempo --help
 ```
 
 The full behavior contract is documented in [`docs/compatibility.md`](docs/compatibility.md).

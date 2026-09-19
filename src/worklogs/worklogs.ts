@@ -144,7 +144,7 @@ async function checkTokens() {
     const isTempoTokenSet = await authenticator.hasTempoToken()
     const isAtlassianTokenSet = await authenticator.hasAtlassianToken()
     if (!isTempoTokenSet || !isAtlassianTokenSet) {
-        throw Error('This tool is not configured. Run `tempo-cli setup` first.')
+        throw Error('This tool is not configured. Run `tempo setup` first.')
     }
 }
 

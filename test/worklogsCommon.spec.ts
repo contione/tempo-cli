@@ -9,19 +9,19 @@ describe('fails when tempo token is not set', () => {
             issueKeyOrAlias: 'ABC-123',
             durationOrInterval: '1h'
         })).rejects.toEqual(
-            new Error('This tool is not configured. Run `tempo-cli setup` first.')
+            new Error('This tool is not configured. Run `tempo setup` first.')
         )
     })
 
     test('when deleting worklog', async () => {
         await expect(worklogs.deleteWorklog('123')).rejects.toEqual(
-            new Error('This tool is not configured. Run `tempo-cli setup` first.')
+            new Error('This tool is not configured. Run `tempo setup` first.')
         )
     })
 
     test('when getting worklog', async () => {
         await expect(worklogs.getUserWorklogs()).rejects.toEqual(
-            new Error('This tool is not configured. Run `tempo-cli setup` first.')
+            new Error('This tool is not configured. Run `tempo setup` first.')
         )
     })
 })

@@ -7,7 +7,8 @@ All notable changes to `@contione/tempo-cli` are documented here. Release versio
 ### Documentation
 
 - Rewrote the user guide and compatibility contract in English.
-- Added original, concise command examples and documented the `tempo-cli` and `tempo` binaries.
+- Added original, concise command examples for the installed `tempo` command.
+- Corrected command examples to use the installed `tempo` command consistently.
 - Documented the `main` branch check/build flow and `v*` tag publishing flow.
 
 ### Compatibility
@@ -20,10 +21,10 @@ All notable changes to `@contione/tempo-cli` are documented here. Release versio
 ### Added
 
 - Initial `@contione/tempo-cli` package line for the `contione/tempo-cli` repository.
-- `tempo-cli` and `tempo` executable names.
+- The single installed `tempo` command.
 - Jira `/rest/api/3/myself` lookup during setup to discover the authenticated `accountId`.
 - JSON configuration at `~/.tempo-cli.json`.
-- Modern Node.js 22.12+ ESM TypeScript and oclif runtime target.
+- Modern Node.js 22.12+ TypeScript and oclif runtime target.
 
 ### Compatibility
 

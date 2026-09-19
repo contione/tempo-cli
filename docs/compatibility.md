@@ -1,60 +1,60 @@
 # CLI Compatibility Contract
 
-This document is the acceptance checklist for `@contione/tempo-cli`. It records the behavior of the original `tempo` CLI while using the new package commands `tempo-cli` and `tempo`.
+This document is the acceptance checklist for `@contione/tempo-cli`. It records the behavior of the original `tempo` CLI for the single installed `tempo` command.
 
 ## General Rules
 
-- [ ] `tempo-cli setup` is required before commands that access Jira or Tempo. Missing credentials produce an actionable setup message.
+- [ ] `tempo setup` is required before commands that access Jira or Tempo. Missing credentials produce an actionable setup message.
 - [ ] Credentials, aliases, and local trackers survive process restarts in `~/.tempo-cli.json`.
 - [ ] Any argument that accepts an issue key also accepts a configured alias. Worklog writes resolve aliases first and send the uppercase issue key's Jira issue ID to Tempo.
 - [ ] API action commands support `-h, --help` and `--debug`, except for the interactive `setup` command. Debug output shows request metadata and response data without authentication headers.
-- [ ] Unauthorized responses tell the user to run `tempo-cli setup` again.
+- [ ] Unauthorized responses tell the user to run `tempo setup` again.
 - [ ] Missing local objects and API failures are reported as readable command output rather than uncaught exceptions.
 
 ## Command Names and Aliases
 
 | Canonical command | Alias | Arguments |
 | --- | --- | --- |
-| `tempo-cli log` | `tempo-cli l` | `ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN]` |
-| `tempo-cli list` | `tempo-cli ls` | `[WHEN]` |
-| `tempo-cli delete` | `tempo-cli d` | `WORKLOG_ID...` |
-| `tempo-cli tracker:start` | `tempo-cli start` | `ISSUE_KEY_OR_ALIAS` |
-| `tempo-cli tracker:pause` | `tempo-cli pause` | `ISSUE_KEY_OR_ALIAS` |
-| `tempo-cli tracker:resume` | `tempo-cli resume` | `ISSUE_KEY_OR_ALIAS` |
-| `tempo-cli tracker:stop` | `tempo-cli stop` | `ISSUE_KEY_OR_ALIAS` |
-| `tempo-cli tracker:list` | none | none |
-| `tempo-cli tracker:delete` | none | `ISSUE_KEY_OR_ALIAS` |
-| `tempo-cli alias:set` | none | `ALIAS ISSUE_KEY` |
-| `tempo-cli alias:list` | none | none |
-| `tempo-cli alias:delete` | none | `ALIAS_NAME` |
+| `tempo log` | `tempo l` | `ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN]` |
+| `tempo list` | `tempo ls` | `[WHEN]` |
+| `tempo delete` | `tempo d` | `WORKLOG_ID...` |
+| `tempo tracker:start` | `tempo start` | `ISSUE_KEY_OR_ALIAS` |
+| `tempo tracker:pause` | `tempo pause` | `ISSUE_KEY_OR_ALIAS` |
+| `tempo tracker:resume` | `tempo resume` | `ISSUE_KEY_OR_ALIAS` |
+| `tempo tracker:stop` | `tempo stop` | `ISSUE_KEY_OR_ALIAS` |
+| `tempo tracker:list` | none | none |
+| `tempo tracker:delete` | none | `ISSUE_KEY_OR_ALIAS` |
+| `tempo alias:set` | none | `ALIAS ISSUE_KEY` |
+| `tempo alias:list` | none | none |
+| `tempo alias:delete` | none | `ALIAS_NAME` |
 
-The `tempo` binary is equivalent to `tempo-cli`. Nested oclif commands retain the `alias:*` and `tracker:*` names shown above.
+Nested oclif commands retain the `alias:*` and `tracker:*` names shown above.
 
 ## Setup, Help, and Completion
 
-### `tempo-cli setup`
+### `tempo setup`
 
 - [ ] Takes no positional arguments or business flags.
 - [ ] Prompts for the Atlassian host, Jira email, Atlassian API token, and Tempo API token.
 - [ ] Uses the Atlassian token to call `GET https://{host}/rest/api/3/myself` and persists the returned `accountId`.
 - [ ] Rejects an empty email, token, or invalid host. A successful setup reports completion.
 - [ ] Stores credentials with restricted permissions and does not require users to copy a Jira profile URL.
-- [ ] Prints instructions for `tempo-cli autocomplete` and optional shell aliases `tl`, `tls`, and `td`.
+- [ ] Prints instructions for `tempo autocomplete` and optional shell aliases `tl`, `tls`, and `td`.
 
-### `tempo-cli help [COMMAND...]`
+### `tempo help [COMMAND...]`
 
 - [ ] Shows root help without a command and command-specific usage, arguments, flags, aliases, and examples when a command is supplied.
 - [ ] Supports `-n, --nested-commands` for including nested commands in root help.
 - [ ] Per-command `-h, --help` output matches the corresponding help command.
 
-### `tempo-cli autocomplete [SHELL]`
+### `tempo autocomplete [SHELL]`
 
 - [ ] Prints installation instructions without a shell argument and shell-specific instructions for shells such as `bash` and `zsh`.
 - [ ] Supports `-r, --refresh-cache` to refresh the completion cache.
 
 ## Worklog Entry
 
-### `tempo-cli log ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN]`
+### `tempo log ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN]`
 
 Flags:
 
@@ -78,7 +78,7 @@ Acceptance behavior:
 
 ## Worklog Listing and Deletion
 
-### `tempo-cli list [WHEN]`
+### `tempo list [WHEN]`
 
 Flags:
 
@@ -93,33 +93,33 @@ Acceptance behavior:
 - [ ] The header shows month logged/required time and current-period difference; the footer shows selected-day required/logged time.
 - [ ] Shows `No worklogs` for an empty selected day while retaining schedule and summary information.
 - [ ] Displays aliases alongside issue keys and marks gaps between adjacent intervals using the original highlighted output behavior.
-- [ ] `tempo-cli ls` is equivalent to `tempo-cli list`.
+- [ ] `tempo ls` is equivalent to `tempo list`.
 
-### `tempo-cli delete WORKLOG_ID...`
+### `tempo delete WORKLOG_ID...`
 
 Flags: `--debug` and `-h, --help`.
 
 Acceptance behavior:
 
-- [ ] Accepts one or more IDs, for example `tempo-cli delete 931842 931859`; `tempo-cli d` is equivalent.
+- [ ] Accepts one or more IDs, for example `tempo delete 931842 931859`; `tempo d` is equivalent.
 - [ ] Processes IDs in command-line order. For each ID it loads the worklog, resolves the issue key, deletes the worklog, and prints deletion details.
 - [ ] Rejects values that are not positive integer IDs. A failure for one ID is reported and does not prevent later IDs from being attempted.
 - [ ] Successful output includes the ID, issue key, interval, and duration.
 
 ## Issue Aliases
 
-### `tempo-cli alias:set ALIAS ISSUE_KEY`
+### `tempo alias:set ALIAS ISSUE_KEY`
 
 - [ ] Supports `--debug` and `-h, --help`.
 - [ ] Persists `ALIAS -> ISSUE_KEY`; setting an existing alias replaces its value.
 - [ ] The alias works with `log` and all tracker commands and appears beside the issue key in rendered tables.
 
-### `tempo-cli alias:list`
+### `tempo alias:list`
 
 - [ ] Supports `--debug` and `-h, --help`.
 - [ ] Prints one line per mapping in the form `alias => ISSUE-KEY` and prints no fabricated entries when empty.
 
-### `tempo-cli alias:delete ALIAS_NAME`
+### `tempo alias:delete ALIAS_NAME`
 
 - [ ] Supports `--debug` and `-h, --help`.
 - [ ] Removes only the requested mapping; deleting an absent alias does not affect other mappings.
@@ -128,7 +128,7 @@ Acceptance behavior:
 
 Trackers are local timers. They do not create remote worklogs until `stop` is called. All six tracker commands accept an issue key or alias and support `--debug` and `-h, --help`.
 
-### `tempo-cli tracker:start ISSUE_KEY_OR_ALIAS`
+### `tempo tracker:start ISSUE_KEY_OR_ALIAS`
 
 Additional flags: `-d, --description=<value>` and `--stop-previous`.
 
@@ -137,22 +137,22 @@ Additional flags: `-d, --description=<value>` and `--stop-previous`.
 - [ ] Saves `--description`; a later stop uses it for generated worklogs unless stop supplies another description.
 - [ ] With `--stop-previous`, stops and uploads the existing tracker before creating the new one.
 - [ ] If any old interval fails to upload, the old tracker remains inactive with failed intervals and the new tracker is not created. A later `tracker:stop` retries the retained intervals.
-- [ ] `tempo-cli start` is equivalent.
+- [ ] `tempo start` is equivalent.
 
-### `tempo-cli tracker:pause ISSUE_KEY_OR_ALIAS`
+### `tempo tracker:pause ISSUE_KEY_OR_ALIAS`
 
 - [ ] Saves the active interval from the latest start/resume through the current time.
 - [ ] Discards intervals shorter than one minute; pausing an already paused tracker does not create a new interval.
 - [ ] Missing trackers produce a readable message without modifying other trackers.
-- [ ] `tempo-cli pause` is equivalent.
+- [ ] `tempo pause` is equivalent.
 
-### `tempo-cli tracker:resume ISSUE_KEY_OR_ALIAS`
+### `tempo tracker:resume ISSUE_KEY_OR_ALIAS`
 
 - [ ] Resumes an inactive tracker from the current time; resuming an already active tracker does not reset its active timestamp.
 - [ ] Missing trackers produce a readable message.
-- [ ] `tempo-cli resume` is equivalent.
+- [ ] `tempo resume` is equivalent.
 
-### `tempo-cli tracker:stop ISSUE_KEY_OR_ALIAS`
+### `tempo tracker:stop ISSUE_KEY_OR_ALIAS`
 
 Additional flags: `-d, --description=<value>` and `-r, --remaining-estimate=<value>`.
 
@@ -162,14 +162,14 @@ Additional flags: `-d, --description=<value>` and `-r, --remaining-estimate=<val
 - [ ] Does not call the write API for intervals shorter than one minute; an empty tracker is cleaned up.
 - [ ] Attempts every interval even when one upload fails. Each successful interval is removed immediately; failed intervals remain in the inactive tracker and the command reports partial failure.
 - [ ] A later `tracker:stop` retries only retained intervals. Once all retries succeed, the tracker is deleted.
-- [ ] `tempo-cli stop` is equivalent.
+- [ ] `tempo stop` is equivalent.
 
-### `tempo-cli tracker:delete ISSUE_KEY_OR_ALIAS`
+### `tempo tracker:delete ISSUE_KEY_OR_ALIAS`
 
 - [ ] Deletes the local tracker without calling Tempo's remote worklog deletion API.
 - [ ] Reports a missing tracker without affecting other trackers.
 
-### `tempo-cli tracker:list`
+### `tempo tracker:list`
 
 - [ ] Lists every local tracker with issue/alias, Active or INACTIVE state, last resume time, each interval, and total duration.
 - [ ] Includes live minutes from the latest resume for an active tracker.

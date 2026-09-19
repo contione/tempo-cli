@@ -210,12 +210,12 @@ function resolveTempoNext(next: string | undefined, currentUrl: string): URL | u
 
 async function requireTempoCredentials(): Promise<Credentials & { tempoToken: string }> {
     const credentials = await authenticator.getCredentials()
-    if (!credentials.tempoToken?.trim()) throw new Error('Tempo token is missing. Run tempo-cli setup.')
+    if (!credentials.tempoToken?.trim()) throw new Error('Tempo token is missing. Run tempo setup.')
     return { ...credentials, tempoToken: credentials.tempoToken.trim() }
 }
 
 function requireAccountId(credentials: Credentials): string {
-    if (!credentials.accountId?.trim()) throw new Error('Jira accountId is missing. Run tempo-cli setup.')
+    if (!credentials.accountId?.trim()) throw new Error('Jira accountId is missing. Run tempo setup.')
     return credentials.accountId.trim()
 }
 
@@ -229,7 +229,7 @@ async function requireJiraCredentials(): Promise<JiraCredentials> {
     const email = credentials.atlassianUserEmail?.trim()
     const token = credentials.atlassianToken?.trim()
     if (!email || !token || !credentials.hostname?.trim()) {
-        throw new Error('Jira credentials are missing. Run tempo-cli setup.')
+        throw new Error('Jira credentials are missing. Run tempo setup.')
     }
     const origin = normalizeAtlassianOrigin(credentials.hostname)
     return {
@@ -347,7 +347,7 @@ function normalizeError(service: 'Tempo' | 'Jira', error: unknown): Error {
         return new Error(error.message)
     }
     if (error.status === 401) {
-        throw new Error('Unauthorized access. Tokens are invalid or have expired. Run tempo-cli setup to configure access.')
+        throw new Error('Unauthorized access. Tokens are invalid or have expired. Run tempo setup to configure access.')
     }
 
     const messages = service === 'Jira' ? extractJiraMessages(error.data) : extractTempoMessages(error.data)

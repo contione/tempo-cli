@@ -23,7 +23,6 @@
     "access": "public"
   },
   "bin": {
-    "tempo-cli": "bin/run",
     "tempo": "bin/run"
   },
   "engines": {
@@ -47,7 +46,7 @@
       }
     },
     "commands": "./dist/commands",
-    "bin": "tempo-cli",
+    "bin": "tempo",
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-warn-if-update-available",

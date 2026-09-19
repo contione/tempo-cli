@@ -405,7 +405,7 @@ describe('fails when', () => {
             durationOrInterval: '1h',
             remainingEstimate: '-1h'
         })).rejects.toEqual(
-            new Error('Error parsing "-1h". Try something like 1h. See tempo-cli log --help for more examples.')
+            new Error('Error parsing "-1h". Try something like 1h. See tempo log --help for more examples.')
         )
     })
 
@@ -415,7 +415,7 @@ describe('fails when', () => {
             durationOrInterval: '1h',
             remainingEstimate: 'something'
         })).rejects.toEqual(
-            new Error('Error parsing "something". Try something like 1h. See tempo-cli log --help for more examples.')
+            new Error('Error parsing "something". Try something like 1h. See tempo log --help for more examples.')
         )
     })
 
@@ -425,7 +425,7 @@ describe('fails when', () => {
             durationOrInterval: '1h',
             when: 'whatever'
         })).rejects.toEqual(
-            new Error('Cannot parse "whatever" to valid date. Try to use YYYY-MM-DD format. See tempo-cli --help for more examples.')
+            new Error('Cannot parse "whatever" to valid date. Try to use YYYY-MM-DD format. See tempo --help for more examples.')
         )
     })
 
@@ -435,7 +435,7 @@ describe('fails when', () => {
             durationOrInterval: '1h',
             startTime: 'foo'
         })).rejects.toEqual(
-            new Error('Cannot parse foo to valid start time. Try to use HH:mm format. See tempo-cli --help for more examples.')
+            new Error('Cannot parse foo to valid start time. Try to use HH:mm format. See tempo --help for more examples.')
         )
     })
 
@@ -444,7 +444,7 @@ describe('fails when', () => {
             issueKeyOrAlias: 'ABC-123',
             durationOrInterval: 'something'
         })).rejects.toEqual(
-            new Error('Error parsing "something". Try something like 1h10m or 11-12:30. See tempo-cli log --help for more examples.')
+            new Error('Error parsing "something". Try something like 1h10m or 11-12:30. See tempo log --help for more examples.')
         )
     })
 

@@ -1,1 +1,1 @@
-export const appName = 'tempo-cli'
+export const appName = 'tempo'
