@@ -1,4 +1,9 @@
-import { parse as fnsParse, format, isValid, differenceInSeconds, isAfter, addSeconds } from 'date-fns'
+import fnsParse from 'date-fns/parse'
+import format from 'date-fns/format'
+import isValid from 'date-fns/isValid'
+import differenceInSeconds from 'date-fns/differenceInSeconds'
+import isAfter from 'date-fns/isAfter'
+import addSeconds from 'date-fns/addSeconds'
 
 export type ParseResult = {
     seconds: number

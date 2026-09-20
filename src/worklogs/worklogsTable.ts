@@ -1,6 +1,6 @@
 import cliTruncate from 'cli-truncate'
 import Table, { HorizontalTable, Cell } from 'cli-table3'
-import { format } from 'date-fns'
+import format from 'date-fns/format'
 import chalk from 'chalk'
 import { UserWorklogs, Worklog } from './worklogs'
 import issueKeyExtended, { AliasesPosition } from '../issueKeyExtended'

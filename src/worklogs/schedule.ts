@@ -2,7 +2,9 @@ import { WorklogEntity, ScheduleEntity } from '../api/api'
 import * as timeParser from './timeParser'
 import _ from 'lodash'
 import time from '../time'
-import { format, isBefore, parse as fnsParse } from 'date-fns'
+import format from 'date-fns/format'
+import isBefore from 'date-fns/isBefore'
+import fnsParse from 'date-fns/parse'
 
 const DATE_FORMAT = 'yyyy-MM-dd'
 

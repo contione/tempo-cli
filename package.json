@@ -4,7 +4,8 @@
   "description": "A focused command-line client for Tempo Cloud and Jira",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc -p .",
+    "build": "tsc -p . && node scripts/manifest.cjs",
+    "prepack": "npm run build",
     "test": "cross-env TZ=Europe/Warsaw jest --runInBand",
     "lint": "eslint .",
     "test:watch": "cross-env TZ=Europe/Warsaw jest --watch",
@@ -66,10 +67,10 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@oclif/core": "^5.0.0",
-    "@oclif/plugin-autocomplete": "^4.0.0",
-    "@oclif/plugin-help": "^7.0.0",
-    "@oclif/plugin-warn-if-update-available": "^4.0.0",
+    "@oclif/core": "4.2.10",
+    "@oclif/plugin-autocomplete": "1.4.6",
+    "@oclif/plugin-help": "6.2.27",
+    "@oclif/plugin-warn-if-update-available": "3.1.38",
     "@types/lodash": "^4.17.16",
     "chalk": "^3.0.0",
     "cli-table3": "^0.5.1",
@@ -86,13 +87,13 @@
     "@types/node": "^22.14.0",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9.24.0",
     "globals": "^16.0.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
-    "cross-env": "^7.0.3",
     "vitest": "^5.0.1"
   }
 }

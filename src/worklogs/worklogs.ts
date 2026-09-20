@@ -2,7 +2,12 @@ import api, { WorklogEntity, GetWorklogsResponse } from '../api/api'
 import * as timeParser from './timeParser'
 import { ParseResult, Interval } from './timeParser'
 import time from '../time'
-import { format, isValid, addDays, parse as fnsParse, startOfMonth, endOfMonth } from 'date-fns'
+import format from 'date-fns/format'
+import isValid from 'date-fns/isValid'
+import addDays from 'date-fns/addDays'
+import fnsParse from 'date-fns/parse'
+import startOfMonth from 'date-fns/startOfMonth'
+import endOfMonth from 'date-fns/endOfMonth'
 import { ScheduleDetails } from './schedule'
 import * as schedule from './schedule'
 import { appName } from '../appName'
@@ -118,12 +123,13 @@ function remainingEstimateSeconds(referenceDate: Date, remainingEstimate?: strin
 async function generateWorklogs(worklogsResponse: GetWorklogsResponse, formattedDate: string): Promise<Worklog[]> {
     const credentials = await authenticator.getCredentials()
 
-    const uniqueIssueIds = [...new Set(worklogsResponse.results.map(worklog => worklog.issue.id))]
+    const selectedWorklogs = worklogsResponse.results
+        .filter(e => e.author.accountId === credentials.accountId && e.startDate === formattedDate)
+    const uniqueIssueIds = [...new Set(selectedWorklogs.map(worklog => worklog.issue.id))]
     const issueKeys = await Promise.all(uniqueIssueIds.map(issueId => api.getIssueKey(issueId)))
     const issueIdToKey = Object.fromEntries(uniqueIssueIds.map((id, index) => [id, issueKeys[index]]))
 
-    return worklogsResponse.results
-        .filter((e: WorklogEntity) => e.author.accountId === credentials.accountId && e.startDate === formattedDate)
+    return selectedWorklogs
         .map((e: WorklogEntity) => toWorklog(e, issueIdToKey, credentials.hostname))
 }
 

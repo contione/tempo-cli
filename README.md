@@ -136,11 +136,12 @@ tempo autocomplete --refresh-cache
 
 ## Development
 
-The project uses modern ESM TypeScript and oclif.
+The project uses TypeScript and oclif. Building also generates the command manifest to keep startup fast.
 
 ```bash
 npm install
 npm run build
+npm link
 npm test
 npm run lint
 npm run release:check
@@ -149,10 +150,17 @@ npm run release:check
 Run the built CLI locally with:
 
 ```bash
-tempo --help
+node bin/run --help
+node bin/run list
 ```
 
+After `npm link`, use `tempo` from any directory. Rebuild after changing TypeScript source.
+
 The full behavior contract is documented in [`docs/compatibility.md`](docs/compatibility.md).
+
+## Agent Skill
+
+[`doc/tempo-cli/SKILL.md`](doc/tempo-cli/SKILL.md) provides installation, configuration, and command guidance for AI agents. To use it with Codex, copy the `doc/tempo-cli` folder into your Codex skills directory (usually `~/.codex/skills`), then invoke `$tempo-cli` with your task.
 
 ## Release Automation
 

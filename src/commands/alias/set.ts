@@ -1,6 +1,6 @@
 import { Command, Flags, Args } from '@oclif/core'
 import { appName } from '../../appName'
-import tempo from '../../tempo'
+import aliases from '../../config/aliases'
 import globalFlags from '../../globalFlags'
 
 export default class Set extends Command {
@@ -29,6 +29,6 @@ export default class Set extends Command {
     async run() {
         const { args, flags } = await this.parse(Set)
         globalFlags.debug = flags.debug
-        await tempo.setAlias(args.alias, args.issue_key)
+        await aliases.set(args.alias, args.issue_key)
     }
 }

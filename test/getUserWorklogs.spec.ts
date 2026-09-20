@@ -234,6 +234,8 @@ describe('get user worklogs', () => {
     test('for today', async () => {
         const result = await worklogs.getUserWorklogs()
 
+        expect(getIssueKeyMock.mock.calls).toEqual([['123'], ['124']])
+
         expect(result.worklogs).toStrictEqual([
             {
                 description: 'Working on issue ABC-123',
@@ -347,6 +349,8 @@ describe('get user worklogs', () => {
 
     test('for specific date when there are no worklogs', async () => {
         const result = await worklogs.getUserWorklogs('2020-02-26')
+
+        expect(getIssueKeyMock).not.toHaveBeenCalled()
 
         expect(result.worklogs).toStrictEqual([])
         expect(result.scheduleDetails).toStrictEqual({

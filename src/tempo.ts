@@ -16,7 +16,8 @@ import trackers, {
 } from './trackers/trackers'
 import { Tracker } from './config/trackerStore'
 import * as trackersTable from './trackers/trackersTable'
-import { lightFormat as fnsLightFormat, differenceInMinutes } from 'date-fns'
+import fnsLightFormat from 'date-fns/lightFormat'
+import differenceInMinutes from 'date-fns/differenceInMinutes'
 import { Interval } from 'date-fns'
 
 export default {

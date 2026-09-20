@@ -4,7 +4,16 @@ All notable changes to `@contione/tempo-cli` are documented here. Release versio
 
 ## [Unreleased]
 
+### Performance
+
+- Generate an oclif command manifest during build and packaging to avoid loading every command at startup.
+- Pin the original oclif versions to avoid the Windows startup regression introduced by the framework upgrade.
+- Load alias storage directly and import only the date helpers needed at runtime.
+- Resolve Jira issue keys only for the selected day's worklogs; monthly totals still use the full month.
+
 ### Documentation
+
+- Added a reusable CLI usage skill at `doc/tempo-cli/SKILL.md` and local build/run instructions.
 
 - Rewrote the user guide and compatibility contract in English.
 - Added original, concise command examples for the installed `tempo` command.

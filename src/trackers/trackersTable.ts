@@ -1,5 +1,6 @@
 import Table, { HorizontalTable, Cell } from 'cli-table3'
-import { lightFormat as fnsLightFormat, differenceInMinutes } from 'date-fns'
+import fnsLightFormat from 'date-fns/lightFormat'
+import differenceInMinutes from 'date-fns/differenceInMinutes'
 import chalk from 'chalk'
 import { Tracker } from '../config/trackerStore'
 import issueKeyExtended, { AliasesPosition } from '../issueKeyExtended'

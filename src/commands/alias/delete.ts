@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from '@oclif/core'
 import { appName } from '../../appName'
-import tempo from '../../tempo'
+import aliases from '../../config/aliases'
 import globalFlags from '../../globalFlags'
 
 export default class Delete extends Command {
@@ -22,6 +22,6 @@ export default class Delete extends Command {
     async run() {
         const { args, flags } = await this.parse(Delete)
         globalFlags.debug = flags.debug
-        tempo.deleteAlias(args.alias_name)
+        await aliases.delete(args.alias_name)
     }
 }
