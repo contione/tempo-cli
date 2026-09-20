@@ -14,6 +14,11 @@ export default {
 
     async saveCredentials(credentials: Credentials) {
         const config = await configStore.read()
+        const changesAccount = config.accountId && config.accountId !== credentials.accountId
+        const changesSite = config.hostname && config.hostname.toLowerCase() !== credentials.hostname?.toLowerCase()
+        if (config.trackers?.size && (changesAccount || changesSite)) {
+            throw new Error('Stop or delete your local trackers before switching Jira account or site. Existing settings were not changed.')
+        }
         config.tempoToken = credentials.tempoToken
         config.accountId = credentials.accountId
         config.atlassianUserEmail = credentials.atlassianUserEmail

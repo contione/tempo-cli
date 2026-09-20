@@ -39,6 +39,6 @@ export default class List extends Command {
     async run() {
         const { args, flags } = await this.parse(List)
         globalFlags.debug = flags.debug
-        await tempo.listUserWorklogs(args.when, flags.verbose)
+        if (!await tempo.listUserWorklogs(args.when, flags.verbose)) this.exit(1)
     }
 }

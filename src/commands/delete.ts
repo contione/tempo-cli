@@ -31,6 +31,6 @@ export default class Delete extends Command {
     async run() {
         const { argv, flags } = await this.parse(Delete)
         globalFlags.debug = flags.debug
-        await tempo.deleteWorklogs(argv.map(String))
+        if (!await tempo.deleteWorklogs(argv.map(String))) this.exit(1)
     }
 }

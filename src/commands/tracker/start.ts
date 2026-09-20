@@ -40,12 +40,13 @@ export default class Start extends Command {
         const { attributes } = parseAttributeArguments(raw, 1)
         if (attributes.length && !flags['stop-previous']) this.error('Work attributes on start require --stop-previous and apply to the previous tracker upload only.')
         globalFlags.debug = flags.debug
-        await tempo.startTracker({
+        const succeeded = await tempo.startTracker({
             issueKeyOrAlias: args.issue_key_or_alias,
             description: flags.description,
             attributes,
             now: time.now(),
             stopPreviousTracker: flags['stop-previous']
         })
+        if (!succeeded) this.exit(1)
     }
 }

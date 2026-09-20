@@ -4,6 +4,15 @@ All notable changes to `@contione/tempo-cli` are documented here. Release versio
 
 ## [Unreleased]
 
+### Review fixes
+
+- Updated vulnerable transitive dependency patches; the production dependency audit reports no remaining advisories.
+- Preserve dates supplied through stdin when parsing trailing work attributes.
+- Block account/site switches while local trackers remain, preserving their original identity.
+- Return nonzero command exit codes for business failures and partially failed batch operations.
+- Await worklog and tracker listing operations, and stop `start --stop-previous` immediately if the old upload fails.
+- Reject unexpected setup arguments before opening the credential prompts.
+
 ### Work Attributes
 
 - Added a fifth setup step to choose default Tempo work attributes, including required Task dropdowns.

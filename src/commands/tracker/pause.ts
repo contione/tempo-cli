@@ -29,9 +29,10 @@ export default class Pause extends Command {
     async run() {
         const { args, flags } = await this.parse(Pause)
         globalFlags.debug = flags.debug
-        await tempo.pauseTracker({
+        const succeeded = await tempo.pauseTracker({
             issueKeyOrAlias: args.issue_key_or_alias,
             now: time.now()
         })
+        if (!succeeded) this.exit(1)
     }
 }

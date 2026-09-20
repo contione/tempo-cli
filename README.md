@@ -46,6 +46,8 @@ After the Jira token is entered, the CLI calls `GET /rest/api/3/myself` and stor
 
 Saved work attribute defaults are sent automatically by `tempo log`, `tempo stop` / `tempo tracker:stop`, and `tempo start --stop-previous`. Dropdowns store their immutable values rather than display labels. Options are fetched during setup, so daily logging does not need another metadata request. Run `tempo setup` again to change the saved defaults or resolve a `Work attribute Task (Task) is required` error from an older configuration. The Tempo token must have permission to read work attributes. CLI defaults are independent of the userscript's settings.
 
+Finish or discard local trackers before switching Jira accounts or sites. Setup allows credential and default updates for the same identity, but blocks an identity change while trackers remain so old intervals cannot be uploaded under a different account.
+
 `log` / `l` and `stop` / `tracker:stop` accept repeatable `-a, --attribute KEY=VALUE` overrides. An explicit key replaces its setup default; omitted keys keep their defaults. Use the immutable Tempo value or ID for dropdowns, not the displayed label. Repeating a key uses the last value. An empty value is explicit and does not fall back to the default. Blank keys or arguments without `=` are rejected, and only the first `=` separates the key from the value. `start` / `tracker:start` accepts `--attribute` only together with `--stop-previous`; those overrides apply to the old tracker's uploaded intervals and are not saved for the new tracker.
 
 Create tokens from [Atlassian account security](https://id.atlassian.com/manage-profile/security/api-tokens) and the Tempo API integration settings for your Jira site.
@@ -149,6 +151,8 @@ Aliases can be used anywhere an issue key is accepted, including all tracker com
 | `autocomplete` | Install shell completion. |
 
 Every action command supports `--help`; commands that call an API also support `--debug`.
+
+Failed operations return a nonzero exit code so shell scripts can detect errors. Batch deletion still attempts all IDs, and a partial tracker upload retains failed intervals while returning failure. Commands wait for their work to finish before returning.
 
 ## Completion and Help
 

@@ -44,8 +44,10 @@ export default {
 
             ${aliasesCommand}
             `))
+            return true
         } catch (e) {
             showError(e as Error)
+            return false
         }
     },
 
@@ -59,15 +61,18 @@ export default {
     },
 
     async deleteWorklogs(worklogsIds: string[]) {
+        let allSucceeded = true
         for (const worklogId of worklogsIds) {
-            await execute(async () => {
+            const succeeded = await execute(async () => {
                 await deleteWorklog(worklogId)
             })
+            if (!succeeded) allSucceeded = false
         }
+        return allSucceeded
     },
 
     async listUserWorklogs(when?: string, verbose = false) {
-        execute(async () => {
+        return execute(async () => {
             cli.action.start('Loading worklogs')
             const userWorklogs = await worklogs.getUserWorklogs(when)
             cli.action.stop('Done.')
@@ -97,53 +102,54 @@ export default {
     },
 
     async startTracker(input: StartTrackerInput) {
-        await execute(async () => {
+        return execute(async () => {
             let tracker = await trackers.findTracker(input.issueKeyOrAlias)
             if (input.stopPreviousTracker && tracker) {
-                await this.stopTracker({
+                const stopped = await this.stopTracker({
                     issueKeyOrAlias: input.issueKeyOrAlias,
                     attributes: input.attributes,
                     now: input.now
                 })
+                if (!stopped) return false
             }
 
             tracker = await trackers.startTracker(input)
             if (!tracker) {
                 console.log(chalk.redBright(`Tracker for ${input.issueKeyOrAlias} already exists.`))
-                return
+                return false
             }
             console.log(`Started tracker for ${tracker.issueKey}.`)
         })
     },
 
     async resumeTracker(input: ResumeTrackerInput) {
-        await execute(async () => {
+        return execute(async () => {
             const tracker = await trackers.resumeTracker(input)
             if (!tracker) {
                 console.log(chalk.redBright(`Tracker for ${input.issueKeyOrAlias} does not exists.`))
-                return
+                return false
             }
             console.log(`Resumed tracker for ${tracker.issueKey}.`)
         })
     },
 
     async pauseTracker(input: PauseTrackerInput) {
-        await execute(async () => {
+        return execute(async () => {
             const tracker = await trackers.pauseTracker(input)
             if (!tracker) {
                 console.log(chalk.redBright(`Tracker for ${input.issueKeyOrAlias} does not exists.`))
-                return
+                return false
             }
             console.log(`Paused tracker for ${tracker.issueKey}.`)
         })
     },
 
     async stopTracker(input: StopTrackerInput) {
-        await execute(async () => {
+        return execute(async () => {
             let tracker = await trackers.stopTracker(input)
             if (!tracker) {
                 console.log(chalk.redBright(`Tracker for ${input.issueKeyOrAlias} does not exists.`))
-                return
+                return false
             }
 
             const intervalsWithInputs = createWorklogInputs(tracker, input.remainingEstimate, input.attributes)
@@ -167,7 +173,7 @@ export default {
 
             if (!allSucceeded) {
                 console.log(chalk.redBright('Failed to log some parts of worklog.'))
-                return
+                return false
             }
 
             await trackers.deleteTracker({ issueKeyOrAlias: tracker.issueKey })
@@ -176,18 +182,18 @@ export default {
     },
 
     async deleteTracker(input: DeleteTrackerInput) {
-        await execute(async () => {
+        return execute(async () => {
             const tracker = await trackers.deleteTracker(input)
             if (!tracker) {
                 console.log(chalk.redBright(`Tracker for ${input.issueKeyOrAlias} does not exists.`))
-                return
+                return false
             }
             console.log(`Deleted tracker for ${tracker.issueKey}.`)
         })
     },
 
     async listTrackers(now: Date) {
-        execute(async () => {
+        return execute(async () => {
             const userTrackers = await trackers.getTrackers()
             for (const tracker of userTrackers) {
                 const table = await trackersTable.render(tracker, now)
@@ -197,10 +203,9 @@ export default {
     }
 }
 
-async function execute(action: () => Promise<void>): Promise<boolean> {
+async function execute(action: () => Promise<void | boolean>): Promise<boolean> {
     try {
-        await action()
-        return true
+        return (await action()) !== false
     } catch (e) {
         showError(e as Error)
         return false

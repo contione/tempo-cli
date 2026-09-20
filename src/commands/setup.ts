@@ -10,6 +10,7 @@ export default class Setup extends Command {
     ]
 
     async run() {
-        await tempo.setup()
+        await this.parse(Setup)
+        if (!await tempo.setup()) this.exit(1)
     }
 }

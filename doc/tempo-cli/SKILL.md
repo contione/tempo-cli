@@ -179,6 +179,7 @@ retry only when the worklog is absent. For a tracker stop, also inspect
 `tempo tracker:list`, but a retained local interval alone does not prove that a
 timed-out remote request failed.
 
-Check the command's human-readable output for success, IDs, and errors instead
-of relying only on the process exit code. For the full behavior contract, read
+Failed operations return a nonzero exit code. Also check the command's output
+for IDs and partial results: a failed tracker stop or batch delete may have
+completed some items. For the full behavior contract, read
 [the compatibility contract](https://github.com/contione/tempo-cli/blob/main/docs/compatibility.md).

@@ -67,8 +67,8 @@ test('mixes flags and trailing attributes in command-line order without mistakin
 })
 
 test('stop and stop-previous forward trailing attributes to their upload operations', async () => {
-    const stop = jest.spyOn(tempo, 'stopTracker').mockResolvedValue(undefined)
-    const start = jest.spyOn(tempo, 'startTracker').mockResolvedValue(undefined)
+    const stop = jest.spyOn(tempo, 'stopTracker').mockResolvedValue(true)
+    const start = jest.spyOn(tempo, 'startTracker').mockResolvedValue(true)
     await new Stop(['NOVA-123', 'Task=option-id', 'Note='], commandConfig()).run()
     expect(stop).toHaveBeenCalledWith(expect.objectContaining({attributes: [{key: 'Task', value: 'option-id'}, {key: 'Note', value: ''}]}))
     await new Start(['NOVA-123', '--stop-previous', 'Task=option-id'], commandConfig()).run()
@@ -77,12 +77,29 @@ test('stop and stop-previous forward trailing attributes to their upload operati
 
 test('unexpected trailing arguments and unsupported start overrides fail before any mutation', async () => {
     const log = jest.spyOn(tempo, 'addWorklog').mockResolvedValue(true)
-    const stop = jest.spyOn(tempo, 'stopTracker').mockResolvedValue(undefined)
-    const start = jest.spyOn(tempo, 'startTracker').mockResolvedValue(undefined)
+    const stop = jest.spyOn(tempo, 'stopTracker').mockResolvedValue(true)
+    const start = jest.spyOn(tempo, 'startTracker').mockResolvedValue(true)
     await expect(new Log(['NOVA-123', '30m', 'yesterday', 'unexpected'], commandConfig()).run()).rejects.toThrow('KEY=VALUE')
     await expect(new Stop(['NOVA-123', 'unexpected'], commandConfig()).run()).rejects.toThrow('KEY=VALUE')
     await expect(new Start(['NOVA-123', 'Task=option-id'], commandConfig()).run()).rejects.toThrow('stop-previous')
     expect(log).not.toHaveBeenCalled()
     expect(stop).not.toHaveBeenCalled()
     expect(start).not.toHaveBeenCalled()
+})
+
+test.each([[], ['--attribute', 'Task=option-id']])('preserves a date read from stdin with flags %j', async (...flags) => {
+    const runtime = globalThis as typeof globalThis & {oclif?: {stdinCache?: string}}
+    const previous = runtime.oclif
+    const ttyDescriptor = Object.getOwnPropertyDescriptor(process.stdin, 'isTTY')
+    Object.defineProperty(process.stdin, 'isTTY', {value: false, configurable: true})
+    runtime.oclif = {...previous, stdinCache: '2026-09-18'}
+    try {
+        const write = jest.spyOn(tempo, 'addWorklog').mockResolvedValue(true)
+        await new Log(['NOVA-123', '30m', ...flags], commandConfig()).run()
+        expect(write).toHaveBeenCalledWith(expect.objectContaining({when: '2026-09-18'}))
+    } finally {
+        runtime.oclif = previous
+        if (ttyDescriptor) Object.defineProperty(process.stdin, 'isTTY', ttyDescriptor)
+        else Reflect.deleteProperty(process.stdin, 'isTTY')
+    }
 })

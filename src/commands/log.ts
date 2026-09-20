@@ -59,9 +59,12 @@ export default class Log extends Command {
 
     async run() {
         const { args, flags, raw } = await this.parse(Log)
-        const { when, attributes } = parseAttributeArguments(raw, 2, true)
+        const { when: argumentDate, attributes } = parseAttributeArguments(raw, 2, true)
+        // oclif may populate WHEN from stdin without adding a raw argument token.
+        const hasDatePosition = raw.some(token => token.type === 'arg' && token.arg === 'when')
+        const when = argumentDate ?? (hasDatePosition ? undefined : args.when)
         globalFlags.debug = flags.debug
-        await tempo.addWorklog({
+        const succeeded = await tempo.addWorklog({
             issueKeyOrAlias: args.issue_key_or_alias,
             durationOrInterval: args.duration_or_interval,
             when,
@@ -70,5 +73,6 @@ export default class Log extends Command {
             attributes,
             remainingEstimate: flags['remaining-estimate']
         })
+        if (!succeeded) this.exit(1)
     }
 }

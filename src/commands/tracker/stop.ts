@@ -38,12 +38,13 @@ export default class Stop extends Command {
         const { args, flags, raw } = await this.parse(Stop)
         const { attributes } = parseAttributeArguments(raw, 1)
         globalFlags.debug = flags.debug
-        await tempo.stopTracker({
+        const succeeded = await tempo.stopTracker({
             issueKeyOrAlias: args.issue_key_or_alias,
             description: flags.description,
             remainingEstimate: flags['remaining-estimate'],
             attributes,
             now: time.now()
         })
+        if (!succeeded) this.exit(1)
     }
 }

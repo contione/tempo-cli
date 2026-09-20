@@ -92,3 +92,28 @@ test('an unconfigured required dropdown does not save a partial setup', async ()
     expect(await configStore.read()).toEqual(oldConfig)
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining('no available options'))
 })
+
+test.each([
+    {hostname: 'example.atlassian.net', accountId: 'old-account'},
+    {hostname: 'old.atlassian.net', accountId: 'account-123'}
+])('does not switch identity with local trackers: %j', async identity => {
+    const config = {
+        ...oldConfig, ...identity,
+        trackers: new Map([['NOVA-123', {issueKey: 'NOVA-123', activeTimestamp: 0, isActive: true, intervals: []}]])
+    }
+    await configStore.save(config)
+    jest.spyOn(api, 'getWorkAttributes').mockResolvedValue([])
+    answers()
+    await expect(tempo.setup()).resolves.toBe(false)
+    expect(await configStore.read()).toEqual(config)
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('before switching Jira account or site'))
+})
+
+test.each([true, false])('keeps trackers during same-identity or initial setup (configured=%s)', async configured => {
+    const trackers = new Map([['NOVA-123', {issueKey: 'NOVA-123', activeTimestamp: 0, isActive: true, intervals: []}]])
+    await configStore.save({trackers, ...(configured ? {hostname: 'example.atlassian.net', accountId: 'account-123'} : {})})
+    jest.spyOn(api, 'getWorkAttributes').mockResolvedValue([])
+    answers()
+    await expect(tempo.setup()).resolves.toBe(true)
+    expect((await configStore.read()).trackers).toEqual(trackers)
+})

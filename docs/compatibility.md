@@ -10,6 +10,7 @@ This document is the acceptance checklist for `@contione/tempo-cli`. It records 
 - [ ] API action commands support `-h, --help` and `--debug`, except for the interactive `setup` command. Debug output shows request metadata and response data without authentication headers.
 - [ ] Unauthorized responses tell the user to run `tempo setup` again.
 - [ ] Missing local objects and API failures are reported as readable command output rather than uncaught exceptions.
+- [ ] Business failures, including partially failed batch operations, produce a nonzero command exit code. Listing commands wait for their asynchronous work to finish.
 
 ## Command Names and Aliases
 
@@ -36,12 +37,14 @@ Nested oclif commands retain the `alias:*` and `tracker:*` names shown above.
 ### `tempo setup`
 
 - [ ] Takes no positional arguments or business flags.
+- [ ] Rejects unexpected arguments before prompting for credentials.
 - [ ] Prompts for the Atlassian host, Jira email, Atlassian API token, Tempo API token, and default work attribute values in five steps.
 - [ ] Reads `/4/work-attributes` using the newly entered Tempo token before saving. Dropdowns offer numbered labels and store immutable values; required attributes cannot be skipped, while optional attributes can have no default.
 - [ ] Handles checkbox values `true`/`false`, numeric values including `0`, and text/account-key values. A failed or cancelled setup leaves existing configuration unchanged.
 - [ ] Uses the Atlassian token to call `GET https://{host}/rest/api/3/myself` and persists the returned `accountId`.
 - [ ] Rejects an empty email, token, or invalid host. A successful setup reports completion.
 - [ ] Stores credentials with restricted permissions and does not require users to copy a Jira profile URL.
+- [ ] Blocks account/site changes while local trackers remain; token/default updates for the same identity and initial setup are allowed.
 - [ ] Prints instructions for `tempo autocomplete` and optional shell aliases `tl`, `tls`, and `td`.
 
 ### `tempo help [COMMAND...]`
@@ -78,6 +81,7 @@ Acceptance behavior:
 - [ ] Includes work attribute defaults from setup without requesting the attribute definitions again. Older configurations without defaults continue to omit attributes; a Tempo attribute validation failure instructs the user to run setup.
 - [ ] Accepts repeatable `-a, --attribute KEY=VALUE` overrides. Explicit keys replace matching setup defaults, while unmentioned keys retain their defaults. Values are immutable Tempo values or IDs, not dropdown display labels.
 - [ ] Accepts trailing `KEY=VALUE` pairs after the optional `WHEN`, and allows trailing pairs and `-a, --attribute` values to be mixed. Across both forms, the last occurrence of a key on the command line wins.
+- [ ] Preserves a date provided through stdin when `WHEN` is omitted from argv, including when attribute flags are present.
 - [ ] Preserves an explicit empty value without falling back to the setup default; a required empty attribute may be rejected by Tempo. Repeated keys use the last value. Blank keys and arguments without `=` are rejected, and splitting occurs at the first `=` only.
 - [ ] Does not update stored defaults or request extra work-attribute metadata when applying per-command overrides.
 - [ ] Parses `--remaining-estimate` with the same parser. Values such as `2h` and `0h` are valid; negative or invalid values fail before the write request.
