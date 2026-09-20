@@ -19,6 +19,7 @@ import * as trackersTable from './trackers/trackersTable'
 import fnsLightFormat from 'date-fns/lightFormat'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import { Interval } from 'date-fns'
+import type { WorkAttributeValue } from './api/api'
 
 export default {
 
@@ -101,6 +102,7 @@ export default {
             if (input.stopPreviousTracker && tracker) {
                 await this.stopTracker({
                     issueKeyOrAlias: input.issueKeyOrAlias,
+                    attributes: input.attributes,
                     now: input.now
                 })
             }
@@ -144,7 +146,7 @@ export default {
                 return
             }
 
-            const intervalsWithInputs = createWorklogInputs(tracker, input.remainingEstimate)
+            const intervalsWithInputs = createWorklogInputs(tracker, input.remainingEstimate, input.attributes)
             if (intervalsWithInputs.length === 0) {
                 console.log('There are no intervals with minimal length of 0 minutes.')
                 await trackers.deleteTracker({ issueKeyOrAlias: tracker.issueKey })
@@ -220,7 +222,7 @@ async function deleteWorklog(worklogIdInput: string): Promise<void> {
     )
 }
 
-function createWorklogInputs(tracker: Tracker, remainingEstimate?: string): [Interval, AddWorklogInput][] {
+function createWorklogInputs(tracker: Tracker, remainingEstimate?: string, attributes?: WorkAttributeValue[]): [Interval, AddWorklogInput][] {
     return tracker.intervals.map(interval => {
         return [
             interval,
@@ -230,6 +232,7 @@ function createWorklogInputs(tracker: Tracker, remainingEstimate?: string): [Int
                 when: fnsLightFormat(interval.start, 'yyyy-MM-dd'),
                 startTime: fnsLightFormat(interval.start, 'HH:mm'),
                 durationOrInterval: `${differenceInMinutes(interval.end, interval.start)}m`,
+                attributes,
                 remainingEstimate: remainingEstimate
             }
         ]

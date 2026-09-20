@@ -39,6 +39,41 @@ test('legacy configurations still omit attributes', async () => {
     expect((api.addWorklog as jest.Mock).mock.calls[0][0]).not.toHaveProperty('attributes')
 })
 
+test('explicit log attributes override matching defaults and preserve unmentioned keys', async () => {
+    await worklogs.addWorklog({
+        issueKeyOrAlias: 'NOVA-123', durationOrInterval: '30m',
+        attributes: [{ key: 'Task', value: 'task-build' }, { key: 'Billable', value: '' }]
+    })
+    expect(api.addWorklog).toHaveBeenCalledWith(expect.objectContaining({attributes: [
+        { key: 'Task', value: 'task-build' }, { key: 'Billable', value: '' }, { key: 'Count', value: '0' }
+    ]}))
+    expect((await configStore.read()).workAttributeDefaults).toEqual(defaults)
+    expect(api.getWorkAttributes).not.toHaveBeenCalled()
+})
+
+test('explicit values work even when setup has no defaults', async () => {
+    const config = await configStore.read()
+    delete config.workAttributeDefaults
+    await configStore.save(config)
+    await worklogs.addWorklog({issueKeyOrAlias: 'NOVA-123', durationOrInterval: '30m', attributes: [{key: 'Task', value: 'task-build'}]})
+    expect(api.addWorklog).toHaveBeenCalledWith(expect.objectContaining({attributes: [{key: 'Task', value: 'task-build'}]}))
+})
+
+test.each(['stop', 'stop-previous'])('%s propagates overrides to each uploaded interval without changing defaults', async mode => {
+    await tempo.startTracker({ issueKeyOrAlias: 'NOVA-123', now: baseDate })
+    await tempo.pauseTracker({ issueKeyOrAlias: 'NOVA-123', now: new Date(baseDate.getTime() + 600_000) })
+    await tempo.resumeTracker({ issueKeyOrAlias: 'NOVA-123', now: new Date(baseDate.getTime() + 900_000) })
+    const input = { issueKeyOrAlias: 'NOVA-123', now: new Date(baseDate.getTime() + 1_800_000), attributes: [{key: 'Task', value: 'task-build'}] }
+    if (mode === 'stop') await tempo.stopTracker(input)
+    else await tempo.startTracker({...input, stopPreviousTracker: true})
+    expect(api.addWorklog).toHaveBeenCalledTimes(2)
+    for (const [request] of (api.addWorklog as jest.Mock).mock.calls) {
+        expect(request.attributes).toEqual([{key: 'Task', value: 'task-build'}, defaults[1], defaults[2]])
+    }
+    expect((await configStore.read()).workAttributeDefaults).toEqual(defaults)
+    expect(api.getWorkAttributes).not.toHaveBeenCalled()
+})
+
 test('every tracker interval uses defaults, including stop-previous uploads', async () => {
     await tempo.startTracker({ issueKeyOrAlias: 'NOVA-123', now: baseDate })
     await tempo.pauseTracker({ issueKeyOrAlias: 'NOVA-123', now: new Date(baseDate.getTime() + 600_000) })

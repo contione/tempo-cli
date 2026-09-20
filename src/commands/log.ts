@@ -3,6 +3,7 @@ import { appName } from '../appName'
 import { trimIndent } from '../trimIndent'
 import tempo from '../tempo'
 import globalFlags from '../globalFlags'
+import { parseAttributes } from '../worklogs/attributes'
 
 export default class Log extends Command {
     static description = '[or l], add a new worklog using duration or interval (abc-123 15m or abc-123 11-12:30)'
@@ -31,6 +32,7 @@ export default class Log extends Command {
         debug: Flags.boolean(),
         description: Flags.string({ char: 'd', description: 'description for worklog' }),
         start: Flags.string({ char: 's', description: 'start time (HH:mm format), used when the input is a duration' }),
+        attribute: Flags.string({ char: 'a', multiple: true, multipleNonGreedy: true, description: 'work attribute KEY=VALUE; repeat to override setup defaults' }),
         'remaining-estimate': Flags.string({ char: 'r', description: 'remaining estimate' })
     }
 
@@ -60,6 +62,7 @@ export default class Log extends Command {
             when: args.when,
             description: flags.description,
             startTime: flags.start,
+            attributes: parseAttributes(flags.attribute),
             remainingEstimate: flags['remaining-estimate']
         })
     }

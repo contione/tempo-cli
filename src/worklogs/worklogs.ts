@@ -1,4 +1,4 @@
-import api, { WorklogEntity, GetWorklogsResponse } from '../api/api'
+import api, { WorklogEntity, GetWorklogsResponse, type WorkAttributeValue } from '../api/api'
 import * as timeParser from './timeParser'
 import { ParseResult, Interval } from './timeParser'
 import time from '../time'
@@ -13,6 +13,7 @@ import * as schedule from './schedule'
 import { appName } from '../appName'
 import authenticator from '../config/authenticator'
 import aliases from '../config/aliases'
+import { mergeAttributes } from './attributes'
 
 const DATE_FORMAT = 'yyyy-MM-dd'
 const START_TIME_FORMAT = 'HH:mm:ss'
@@ -27,6 +28,7 @@ export type AddWorklogInput = {
     description?: string
     startTime?: string,
     remainingEstimate?: string
+    attributes?: WorkAttributeValue[]
 }
 
 export type Worklog = {
@@ -60,6 +62,7 @@ export default {
         }
         const issueKey = (await aliases.getIssueKey(input.issueKeyOrAlias) ?? input.issueKeyOrAlias).toUpperCase()
         const issueId = await api.getIssueId(issueKey)
+        const attributes = mergeAttributes(credentials.workAttributeDefaults, input.attributes)
         let worklogEntity: WorklogEntity
         try {
             worklogEntity = await api.addWorklog({
@@ -69,7 +72,7 @@ export default {
                 startTime: startTime(parseResult, input.startTime, referenceDate),
                 description: input.description,
                 remainingEstimateSeconds: remainingEstimateSeconds(referenceDate, input.remainingEstimate),
-                ...(credentials.workAttributeDefaults?.length ? { attributes: credentials.workAttributeDefaults } : {})
+                ...(attributes.length ? { attributes } : {})
             })
         } catch (error) {
             if (error instanceof Error && /work attribute/i.test(error.message)) {

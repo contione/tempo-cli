@@ -1,12 +1,14 @@
 import aliases from '../config/aliases'
 import trackerStore, { Tracker } from '../config/trackerStore'
 import { Interval } from 'date-fns'
+import type { WorkAttributeValue } from '../api/api'
 
 export type StartTrackerInput = {
     issueKeyOrAlias: string,
     description?: string,
     now: Date,
     stopPreviousTracker?: boolean
+    attributes?: WorkAttributeValue[]
 }
 
 export type ResumeTrackerInput = {
@@ -23,6 +25,7 @@ export type StopTrackerInput = {
     issueKeyOrAlias: string,
     description?: string,
     remainingEstimate?: string,
+    attributes?: WorkAttributeValue[],
     now: Date
 }
 

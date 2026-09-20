@@ -8,6 +8,7 @@ All notable changes to `@contione/tempo-cli` are documented here. Release versio
 
 - Added a fifth setup step to choose default Tempo work attributes, including required Task dropdowns.
 - Save immutable dropdown values locally and include defaults in direct worklogs and every tracker upload without additional metadata requests.
+- Added repeatable per-command `--attribute KEY=VALUE` overrides for `log` and `stop`; `start --stop-previous` can apply overrides to the old tracker's upload without changing saved defaults.
 - Keep existing settings when setup cannot finish, and suggest setup when Tempo rejects a work attribute.
 
 ### Performance

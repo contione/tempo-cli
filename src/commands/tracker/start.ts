@@ -3,6 +3,7 @@ import { appName } from '../../appName'
 import tempo from '../../tempo'
 import globalFlags from '../../globalFlags'
 import time from '../../time'
+import { parseAttributes } from '../../worklogs/attributes'
 
 export default class Start extends Command {
     static id = 'tracker:start'
@@ -20,6 +21,7 @@ export default class Start extends Command {
         help: Flags.help({ char: 'h' }),
         debug: Flags.boolean(),
         description: Flags.string({ char: 'd', description: 'description for worklog once tracker is stopped' }),
+        attribute: Flags.string({ char: 'a', multiple: true, multipleNonGreedy: true, dependsOn: ['stop-previous'], description: 'work attribute KEY=VALUE for the previous tracker upload only; repeat to override setup defaults' }),
         'stop-previous': Flags.boolean({ description: 'stops and logs previous tracker with the same issue key if it exists' })
     }
 
@@ -36,6 +38,7 @@ export default class Start extends Command {
         await tempo.startTracker({
             issueKeyOrAlias: args.issue_key_or_alias,
             description: flags.description,
+            attributes: parseAttributes(flags.attribute),
             now: time.now(),
             stopPreviousTracker: flags['stop-previous']
         })

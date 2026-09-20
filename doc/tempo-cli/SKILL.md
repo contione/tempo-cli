@@ -72,7 +72,18 @@ Record a duration or an interval with `log` (alias `l`):
 tempo log ISSUE-123 1h20m --description "Investigated retries"
 tempo log ISSUE-123 09:40-11:00 2026-09-18
 tempo log ISSUE-123 45m yesterday --start 09:00 --remaining-estimate 2h
+tempo log ISSUE-123 1h --attribute "Task=task-option-id"
 ```
+
+`log` / `l` accept repeatable `-a, --attribute KEY=VALUE` overrides. The value
+must be the immutable Tempo value or ID, especially for dropdown attributes;
+the displayed option label is not accepted as a substitute. An explicit key
+overrides its setup default, while an omitted key keeps the default. Repeated
+keys use the last value. An explicit empty value, such as `--attribute
+Task=`, stays empty and does not fall back to the setup default. Blank keys and
+arguments without `=` are rejected. Only the first `=` separates the key from
+the value, so a value may contain another `=`. These overrides do not change
+the stored defaults or trigger another work-attribute metadata request.
 
 `WHEN` defaults to today and accepts `YYYY-MM-DD`, `y`, `yesterday`,
 `today+N`, `today-N`, `t+N`, and `t-N`. Durations include `30m`, `2h`, and
@@ -109,11 +120,17 @@ tempo tracker:pause ISSUE-123
 tempo tracker:resume ISSUE-123
 tempo tracker:list
 tempo tracker:stop ISSUE-123 --remaining-estimate 2h
+tempo stop ISSUE-123 --attribute "Task=task-option-id"
 ```
 
 The short commands are `start`, `pause`, `resume`, and `stop`. Use
 `--stop-previous` with `tracker:start` to finish an existing tracker for the
 same issue before starting a new one; this option also uploads worklogs.
+A `--attribute KEY=VALUE` override may be supplied to `start` / `tracker:start`
+only with `--stop-previous`. It applies to the old tracker's uploaded
+intervals and is not persisted for the new tracker. `stop` / `tracker:stop`
+accept the same repeatable override and apply it to every interval uploaded by
+that stop. Unmentioned attributes continue to use setup defaults.
 A stop attempts every stored interval;
 successful intervals are removed immediately and failed intervals remain for a
 later retry. `tracker:delete` removes only the local tracker and does not call

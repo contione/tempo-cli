@@ -44,7 +44,9 @@ The setup flow asks for:
 
 After the Jira token is entered, the CLI calls `GET /rest/api/3/myself` and stores the returned `accountId`. Step 5 loads `/4/work-attributes` using the new Tempo token. Credentials, default work attributes, aliases, and local trackers are stored in `~/.tempo-cli.json` with restricted file permissions. Setup saves only after every step succeeds.
 
-Saved work attribute defaults are sent automatically by `tempo log`, `tempo stop` / `tempo tracker:stop`, and `tempo start --stop-previous`. Dropdowns store their immutable values rather than display labels. Options are fetched during setup, so daily logging does not need another metadata request. Run `tempo setup` again to change the defaults or resolve a `Work attribute Task (Task) is required` error from an older configuration. The Tempo token must have permission to read work attributes. CLI defaults are independent of the userscript's settings.
+Saved work attribute defaults are sent automatically by `tempo log`, `tempo stop` / `tempo tracker:stop`, and `tempo start --stop-previous`. Dropdowns store their immutable values rather than display labels. Options are fetched during setup, so daily logging does not need another metadata request. Run `tempo setup` again to change the saved defaults or resolve a `Work attribute Task (Task) is required` error from an older configuration. The Tempo token must have permission to read work attributes. CLI defaults are independent of the userscript's settings.
+
+`log` / `l` and `stop` / `tracker:stop` accept repeatable `-a, --attribute KEY=VALUE` overrides. An explicit key replaces its setup default; omitted keys keep their defaults. Use the immutable Tempo value or ID for dropdowns, not the displayed label. Repeating a key uses the last value. An empty value is explicit and does not fall back to the default. Blank keys or arguments without `=` are rejected, and only the first `=` separates the key from the value. `start` / `tracker:start` accepts `--attribute` only together with `--stop-previous`; those overrides apply to the old tracker's uploaded intervals and are not saved for the new tracker.
 
 Create tokens from [Atlassian account security](https://id.atlassian.com/manage-profile/security/api-tokens) and the Tempo API integration settings for your Jira site.
 
@@ -55,6 +57,9 @@ The following examples use sample issue keys and worklog IDs:
 ```bash
 # Record a duration with a description.
 tempo log NOVA-318 1h20m --description "Investigated webhook retries"
+
+# Override one work attribute for this worklog; use its immutable Tempo value.
+tempo log NOVA-318 1h20m --attribute "Task=task-option-id"
 
 # Record an explicit interval on a specific date.
 tempo log NOVA-318 09:40-11:00 2026-09-18
@@ -84,6 +89,8 @@ tempo tracker:pause NOVA-318
 tempo tracker:resume NOVA-318
 tempo tracker:list
 tempo tracker:stop NOVA-318 --remaining-estimate 2h
+# Alternatively, override Task when stopping.
+tempo stop NOVA-318 --attribute "Task=task-option-id"
 tempo tracker:delete NOVA-318
 ```
 
@@ -91,6 +98,8 @@ Use `--stop-previous` to finish an existing tracker before starting another one 
 
 ```bash
 tempo tracker:start NOVA-318 --stop-previous
+# The override applies only while uploading the old tracker.
+tempo start NOVA-318 --stop-previous --attribute "Task=task-option-id"
 ```
 
 The short tracker aliases are `start`, `pause`, `resume`, and `stop`.
