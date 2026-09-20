@@ -10,6 +10,21 @@ export type AddWorklogRequest = {
     startTime: string
     description?: string
     remainingEstimateSeconds?: number
+    attributes?: WorkAttributeValue[]
+}
+
+export type WorkAttribute = {
+    key: string
+    name: string
+    type: string
+    required: boolean
+    values?: string[]
+    names?: Record<string, string>
+}
+
+export type WorkAttributeValue = {
+    key: string
+    value: string
 }
 
 export type GetWorklogsRequest = {
@@ -124,6 +139,36 @@ const api = {
         })
     },
 
+    async getWorkAttributes(tempoToken?: string): Promise<WorkAttribute[]> {
+        return execute('Tempo', async () => {
+            const token = tempoToken === undefined
+                ? (await requireTempoCredentials()).tempoToken
+                : requireTempoToken(tempoToken)
+            const url = tempoUrl('/work-attributes')
+            url.searchParams.set('limit', '1000')
+
+            const results: WorkAttribute[] = []
+            const visited = new Set<string>()
+            let next: URL | undefined = url
+            let pages = 0
+
+            while (next) {
+                const pageUrl = next.toString()
+                if (visited.has(pageUrl)) throw new Error('Tempo pagination loop detected.')
+                visited.add(pageUrl)
+                pages += 1
+                if (pages > 100) throw new Error('Tempo pagination exceeded the safety limit.')
+
+                const response = await tempoRequest<unknown>(pageUrl, token)
+                const page = parseWorkAttributePage(response.data)
+                results.push(...page.results)
+                next = resolveTempoNext(page.next, response.url || pageUrl)
+            }
+
+            return results
+        })
+    },
+
     async getUserSchedule(request: GetUserScheduleRequest): Promise<GetUserScheduleResponse> {
         return execute('Tempo', async () => {
             const credentials = await requireTempoCredentials()
@@ -214,6 +259,12 @@ async function requireTempoCredentials(): Promise<Credentials & { tempoToken: st
     return { ...credentials, tempoToken: credentials.tempoToken.trim() }
 }
 
+function requireTempoToken(value: string): string {
+    const token = value.trim()
+    if (!token) throw new Error('Tempo token is missing.')
+    return token
+}
+
 function requireAccountId(credentials: Credentials): string {
     if (!credentials.accountId?.trim()) throw new Error('Jira accountId is missing. Run tempo setup.')
     return credentials.accountId.trim()
@@ -292,6 +343,50 @@ function parseWorklog(value: unknown): WorklogEntity {
         description: typeof value.description === 'string' ? value.description : '',
         timeSpentSeconds
     }
+}
+
+function parseWorkAttributePage(value: unknown): { results: WorkAttribute[]; next?: string } {
+    if (!isRecord(value) || !Array.isArray(value.results) || !isRecord(value.metadata)) {
+        throw new Error('Tempo work attributes response has an invalid shape.')
+    }
+    const next = value.metadata.next
+    if (next !== undefined && next !== null && typeof next !== 'string') {
+        throw new Error('Tempo work attributes pagination link has an invalid shape.')
+    }
+    return {
+        results: value.results.map(parseWorkAttribute),
+        ...(typeof next === 'string' && next.length > 0 ? { next } : {})
+    }
+}
+
+function parseWorkAttribute(value: unknown): WorkAttribute {
+    if (!isRecord(value)
+        || typeof value.key !== 'string' || !value.key.trim()
+        || typeof value.name !== 'string' || !value.name.trim()
+        || typeof value.type !== 'string' || !value.type.trim()
+        || typeof value.required !== 'boolean') {
+        throw new Error('Tempo work attribute has an invalid shape.')
+    }
+
+    const attribute: WorkAttribute = {
+        key: value.key.trim(),
+        name: value.name.trim(),
+        type: value.type.trim(),
+        required: value.required
+    }
+    if (value.values !== undefined) {
+        if (!Array.isArray(value.values) || value.values.some(item => typeof item !== 'string')) {
+            throw new Error('Tempo work attribute values have an invalid shape.')
+        }
+        attribute.values = value.values
+    }
+    if (value.names !== undefined) {
+        if (!isRecord(value.names) || Object.values(value.names).some(item => typeof item !== 'string')) {
+            throw new Error('Tempo work attribute names have an invalid shape.')
+        }
+        attribute.names = value.names as Record<string, string>
+    }
+    return attribute
 }
 
 function parseScheduleResponse(value: unknown): GetUserScheduleResponse {

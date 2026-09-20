@@ -37,7 +37,11 @@ test('creates a Tempo worklog with bearer auth and an integer issueId', async ()
         timeSpentSeconds: 3_600,
         startDate: '2026-09-19',
         startTime: '09:00:00',
-        description: 'Implementation'
+        description: 'Implementation',
+        attributes: [
+            { key: 'Task', value: 'false' },
+            { key: '_Count_', value: '0' }
+        ]
     })
 
     expect(result.tempoWorklogId).toBe('42')
@@ -54,8 +58,86 @@ test('creates a Tempo worklog with bearer auth and an integer issueId', async ()
     expect(JSON.parse(String(requestInit?.body))).toMatchObject({
         issueId: 10001,
         authorAccountId: 'account-123',
-        description: 'Implementation'
+        description: 'Implementation',
+        attributes: [
+            { key: 'Task', value: 'false' },
+            { key: '_Count_', value: '0' }
+        ]
     })
+})
+
+test('gets work attributes with an explicit token and follows pagination', async () => {
+    vi.mocked(authenticator.getCredentials).mockClear()
+    const fetchMock = vi.fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse({
+            metadata: { next: 'https://api.tempo.io/4/work-attributes?offset=1&limit=1000' },
+            results: [{
+                key: 'Task',
+                name: 'Task',
+                type: 'STATIC_LIST',
+                required: true,
+                values: ['task-a'],
+                names: { 'task-a': 'Build' }
+            }]
+        }))
+        .mockResolvedValueOnce(jsonResponse({
+            metadata: {},
+            results: [{
+                key: '_Count_',
+                name: 'Count',
+                type: 'INPUT_NUMERIC',
+                required: false
+            }]
+        }))
+    globalThis.fetch = fetchMock
+
+    await expect(api.getWorkAttributes('setup-tempo-token')).resolves.toEqual([
+        {
+            key: 'Task',
+            name: 'Task',
+            type: 'STATIC_LIST',
+            required: true,
+            values: ['task-a'],
+            names: { 'task-a': 'Build' }
+        },
+        {
+            key: '_Count_',
+            name: 'Count',
+            type: 'INPUT_NUMERIC',
+            required: false
+        }
+    ])
+    expect(vi.mocked(authenticator.getCredentials)).not.toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://api.tempo.io/4/work-attributes?limit=1000')
+    for (const [, init] of fetchMock.mock.calls) {
+        expect(init?.headers).toMatchObject({ Authorization: 'Bearer setup-tempo-token' })
+    }
+})
+
+test('loads work attributes from stored Tempo credentials when no token is supplied', async () => {
+    vi.mocked(authenticator.getCredentials).mockResolvedValue({ tempoToken: 'stored-tempo-token' })
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({
+        metadata: {},
+        results: [{ key: 'Task', name: 'Task', type: 'INPUT_FIELD', required: true }]
+    }))
+    globalThis.fetch = fetchMock
+
+    await expect(api.getWorkAttributes()).resolves.toEqual([
+        { key: 'Task', name: 'Task', type: 'INPUT_FIELD', required: true }
+    ])
+    expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({ Authorization: 'Bearer stored-tempo-token' })
+})
+
+test('rejects malformed work attribute definitions', async () => {
+    vi.mocked(authenticator.getCredentials).mockResolvedValue({ tempoToken: 'tempo-secret' })
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({
+        metadata: {},
+        results: [{ key: 'Task', name: 'Task', type: 'STATIC_LIST', required: true, values: ['ok', 0] }]
+    }))
+    globalThis.fetch = fetchMock
+
+    await expect(api.getWorkAttributes()).rejects.toThrow('work attribute values')
 })
 
 test('follows same-origin Tempo pagination and normalizes response ids', async () => {

@@ -45,10 +45,18 @@ If credentials have not been configured, run the interactive setup:
 tempo setup
 ```
 
-It asks for the Atlassian host, Jira email, Atlassian API token, and Tempo API
-token. Setup calls Jira `GET /rest/api/3/myself` with the Atlassian token and
+It asks for the Atlassian host, Jira email, Atlassian API token, Tempo API
+token, then default work attribute values in step 5. Choose dropdown defaults
+by number; optional attributes can be skipped, while required ones need a
+value. The dropdown labels come from Tempo, and their immutable values are
+stored. Setup calls Jira `GET /rest/api/3/myself` with the Atlassian token and
 stores the returned Jira `accountId`; this is the Jira identity used for Tempo
 worklog queries, not a separate Tempo account identifier.
+
+`log`, tracker stops, and `start --stop-previous` automatically submit the saved
+attribute defaults. If Tempo reports a missing or invalid work attribute such
+as Task, rerun `tempo setup` to choose the correct defaults. Setup fetches the
+definitions using the new token and saves only after all steps succeed.
 
 Credentials, aliases, and local tracker state are stored in
 `~/.tempo-cli.json` with restricted permissions. Never put either token in a

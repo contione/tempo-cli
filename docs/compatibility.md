@@ -35,7 +35,9 @@ Nested oclif commands retain the `alias:*` and `tracker:*` names shown above.
 ### `tempo setup`
 
 - [ ] Takes no positional arguments or business flags.
-- [ ] Prompts for the Atlassian host, Jira email, Atlassian API token, and Tempo API token.
+- [ ] Prompts for the Atlassian host, Jira email, Atlassian API token, Tempo API token, and default work attribute values in five steps.
+- [ ] Reads `/4/work-attributes` using the newly entered Tempo token before saving. Dropdowns offer numbered labels and store immutable values; required attributes cannot be skipped, while optional attributes can have no default.
+- [ ] Handles checkbox values `true`/`false`, numeric values including `0`, and text/account-key values. A failed or cancelled setup leaves existing configuration unchanged.
 - [ ] Uses the Atlassian token to call `GET https://{host}/rest/api/3/myself` and persists the returned `accountId`.
 - [ ] Rejects an empty email, token, or invalid host. A successful setup reports completion.
 - [ ] Stores credentials with restricted permissions and does not require users to copy a Jira profile URL.
@@ -71,6 +73,7 @@ Acceptance behavior:
 - [ ] Uses `--start` only for duration input. If an interval already supplies a start time, `--start` is ignored and the user is told which start time was used.
 - [ ] Defaults a duration start time to the resolved reference time. An omitted `WHEN` uses the current time; date-only and relative date values resolve to the start of the selected day.
 - [ ] Resolves aliases before looking up the Jira issue ID, then sends duration, start date, start time, description, and remaining estimate to Tempo.
+- [ ] Includes work attribute defaults from setup without requesting the attribute definitions again. Older configurations without defaults continue to omit attributes; a Tempo attribute validation failure instructs the user to run setup.
 - [ ] Parses `--remaining-estimate` with the same parser. Values such as `2h` and `0h` are valid; negative or invalid values fail before the write request.
 - [ ] Supports `YYYY-MM-DD`, `y`, `yesterday`, `t+N`, `today+N`, `t-N`, and `today-N` for `WHEN`; `N` is a non-negative integer and `+0`/`-0` mean today.
 - [ ] Invalid duration, interval, date, or start time prevents an API write and includes the input value in the error.
@@ -158,6 +161,7 @@ Additional flags: `-d, --description=<value>` and `-r, --remaining-estimate=<val
 
 - [ ] Applies pause semantics first, then converts each stored interval to a worklog using its start date, start time, and minute duration.
 - [ ] Uses stop's description when supplied; otherwise uses the description saved at start. Passes `--remaining-estimate` to each generated worklog.
+- [ ] Applies the saved work attribute defaults to every uploaded interval, including uploads triggered by `start --stop-previous`.
 - [ ] Deletes the local tracker only after every interval uploads successfully.
 - [ ] Does not call the write API for intervals shorter than one minute; an empty tracker is cleaned up.
 - [ ] Attempts every interval even when one upload fails. Each successful interval is removed immediately; failed intervals remain in the inactive tracker and the command reports partial failure.

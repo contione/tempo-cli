@@ -40,8 +40,11 @@ The setup flow asks for:
 2. Your Jira/Atlassian email address.
 3. An Atlassian API token.
 4. A Tempo API token.
+5. Default Tempo work attribute values, such as **Task**. For dropdowns, choose an option by its displayed number. Required attributes need a value; optional attributes can be skipped. Text and numeric attributes prompt for a value, and checkboxes offer Yes or No.
 
-After the Jira token is entered, the CLI calls `GET /rest/api/3/myself` and stores the returned `accountId`. Credentials, aliases, and local trackers are stored in `~/.tempo-cli.json` with restricted file permissions.
+After the Jira token is entered, the CLI calls `GET /rest/api/3/myself` and stores the returned `accountId`. Step 5 loads `/4/work-attributes` using the new Tempo token. Credentials, default work attributes, aliases, and local trackers are stored in `~/.tempo-cli.json` with restricted file permissions. Setup saves only after every step succeeds.
+
+Saved work attribute defaults are sent automatically by `tempo log`, `tempo stop` / `tempo tracker:stop`, and `tempo start --stop-previous`. Dropdowns store their immutable values rather than display labels. Options are fetched during setup, so daily logging does not need another metadata request. Run `tempo setup` again to change the defaults or resolve a `Work attribute Task (Task) is required` error from an older configuration. The Tempo token must have permission to read work attributes. CLI defaults are independent of the userscript's settings.
 
 Create tokens from [Atlassian account security](https://id.atlassian.com/manage-profile/security/api-tokens) and the Tempo API integration settings for your Jira site.
 

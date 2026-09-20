@@ -4,6 +4,12 @@ All notable changes to `@contione/tempo-cli` are documented here. Release versio
 
 ## [Unreleased]
 
+### Work Attributes
+
+- Added a fifth setup step to choose default Tempo work attributes, including required Task dropdowns.
+- Save immutable dropdown values locally and include defaults in direct worklogs and every tracker upload without additional metadata requests.
+- Keep existing settings when setup cannot finish, and suggest setup when Tempo rejects a work attribute.
+
 ### Performance
 
 - Generate an oclif command manifest during build and packaging to avoid loading every command at startup.

@@ -1,4 +1,5 @@
 import configStore from './configStore'
+import type { WorkAttributeValue } from '../api/api'
 
 export type Credentials = {
     tempoToken?: string;
@@ -6,6 +7,7 @@ export type Credentials = {
     atlassianUserEmail?: string;
     atlassianToken?: string;
     hostname?: string;
+    workAttributeDefaults?: WorkAttributeValue[];
 }
 
 export default {
@@ -17,6 +19,7 @@ export default {
         config.atlassianUserEmail = credentials.atlassianUserEmail
         config.atlassianToken = credentials.atlassianToken
         config.hostname = credentials.hostname
+        if (credentials.workAttributeDefaults !== undefined) config.workAttributeDefaults = credentials.workAttributeDefaults
         await configStore.save(config)
     },
 
@@ -27,7 +30,8 @@ export default {
             accountId: config.accountId,
             atlassianUserEmail: config.atlassianUserEmail,
             atlassianToken: config.atlassianToken,
-            hostname: config.hostname
+            hostname: config.hostname,
+            workAttributeDefaults: config.workAttributeDefaults
         }
     },
 

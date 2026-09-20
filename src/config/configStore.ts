@@ -3,6 +3,7 @@ import os from 'os'
 import { promisify } from 'util'
 import path from 'path'
 import { Tracker } from './trackerStore'
+import type { WorkAttributeValue } from '../api/api'
 
 const readFileAsync = promisify(fs.readFile)
 const writeFileAsync = promisify(fs.writeFile)
@@ -15,6 +16,7 @@ export type Config = {
     atlassianUserEmail?: string
     atlassianToken?: string
     hostname?: string
+    workAttributeDefaults?: WorkAttributeValue[]
     aliases?: Map<string, string>
     trackers?: Map<string, Tracker>
 }

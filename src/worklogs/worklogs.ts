@@ -60,14 +60,23 @@ export default {
         }
         const issueKey = (await aliases.getIssueKey(input.issueKeyOrAlias) ?? input.issueKeyOrAlias).toUpperCase()
         const issueId = await api.getIssueId(issueKey)
-        const worklogEntity = await api.addWorklog({
-            issueId: issueId,
-            timeSpentSeconds: parseResult.seconds,
-            startDate: format(referenceDate, DATE_FORMAT),
-            startTime: startTime(parseResult, input.startTime, referenceDate),
-            description: input.description,
-            remainingEstimateSeconds: remainingEstimateSeconds(referenceDate, input.remainingEstimate)
-        })
+        let worklogEntity: WorklogEntity
+        try {
+            worklogEntity = await api.addWorklog({
+                issueId: issueId,
+                timeSpentSeconds: parseResult.seconds,
+                startDate: format(referenceDate, DATE_FORMAT),
+                startTime: startTime(parseResult, input.startTime, referenceDate),
+                description: input.description,
+                remainingEstimateSeconds: remainingEstimateSeconds(referenceDate, input.remainingEstimate),
+                ...(credentials.workAttributeDefaults?.length ? { attributes: credentials.workAttributeDefaults } : {})
+            })
+        } catch (error) {
+            if (error instanceof Error && /work attribute/i.test(error.message)) {
+                throw new Error(`${error.message} Run tempo setup to choose valid default work attributes.`)
+            }
+            throw error
+        }
         return toWorklog(worklogEntity, { [worklogEntity.issue.id]: issueKey }, credentials.hostname)
     },
 
