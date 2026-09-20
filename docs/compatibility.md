@@ -15,7 +15,8 @@ This document is the acceptance checklist for `@contione/tempo-cli`. It records 
 
 | Canonical command | Alias | Arguments |
 | --- | --- | --- |
-| `tempo log` | `tempo l` | `ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN]` |
+| `tempo log` | `tempo l` | `ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN] [KEY=VALUE...]` |
+| `tempo tasks` | `tempo task:list` | none |
 | `tempo list` | `tempo ls` | `[WHEN]` |
 | `tempo delete` | `tempo d` | `WORKLOG_ID...` |
 | `tempo tracker:start` | `tempo start` | `ISSUE_KEY_OR_ALIAS` |
@@ -56,7 +57,7 @@ Nested oclif commands retain the `alias:*` and `tracker:*` names shown above.
 
 ## Worklog Entry
 
-### `tempo log ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN]`
+### `tempo log ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN] [KEY=VALUE...]`
 
 Flags:
 
@@ -76,12 +77,19 @@ Acceptance behavior:
 - [ ] Resolves aliases before looking up the Jira issue ID, then sends duration, start date, start time, description, and remaining estimate to Tempo.
 - [ ] Includes work attribute defaults from setup without requesting the attribute definitions again. Older configurations without defaults continue to omit attributes; a Tempo attribute validation failure instructs the user to run setup.
 - [ ] Accepts repeatable `-a, --attribute KEY=VALUE` overrides. Explicit keys replace matching setup defaults, while unmentioned keys retain their defaults. Values are immutable Tempo values or IDs, not dropdown display labels.
+- [ ] Accepts trailing `KEY=VALUE` pairs after the optional `WHEN`, and allows trailing pairs and `-a, --attribute` values to be mixed. Across both forms, the last occurrence of a key on the command line wins.
 - [ ] Preserves an explicit empty value without falling back to the setup default; a required empty attribute may be rejected by Tempo. Repeated keys use the last value. Blank keys and arguments without `=` are rejected, and splitting occurs at the first `=` only.
 - [ ] Does not update stored defaults or request extra work-attribute metadata when applying per-command overrides.
 - [ ] Parses `--remaining-estimate` with the same parser. Values such as `2h` and `0h` are valid; negative or invalid values fail before the write request.
 - [ ] Supports `YYYY-MM-DD`, `y`, `yesterday`, `t+N`, `today+N`, `t-N`, and `today-N` for `WHEN`; `N` is a non-negative integer and `+0`/`-0` mean today.
 - [ ] Invalid duration, interval, date, or start time prevents an API write and includes the input value in the error.
 - [ ] A successful command prints the duration, issue key, and a delete command containing the new worklog ID.
+
+### `tempo tasks` / `tempo task:list`
+
+- [ ] Is read-only and lists each static Task display label with its immutable Tempo value or ID.
+- [ ] Indicates which listed value matches the current setup default.
+- [ ] Reports that no Task values are available when Task is missing or is not a static attribute, without fabricating labels or values.
 
 ## Worklog Listing and Deletion
 
@@ -137,13 +145,14 @@ Trackers are local timers. They do not create remote worklogs until `stop` is ca
 
 ### `tempo tracker:start ISSUE_KEY_OR_ALIAS`
 
-Additional flags: `-d, --description=<value>`, repeatable `-a, --attribute=<KEY=VALUE>`, and `--stop-previous`.
+Additional flags: `-d, --description=<value>`, repeatable `-a, --attribute=<KEY=VALUE>`, and `--stop-previous`. It also accepts trailing `KEY=VALUE` pairs only with `--stop-previous`.
 
 - [ ] Creates an active tracker with issue key, description, start timestamp, and an empty interval list.
 - [ ] Refuses to create a second tracker for the same issue unless `--stop-previous` is supplied.
 - [ ] Saves `--description`; a later stop uses it for generated worklogs unless stop supplies another description.
 - [ ] With `--stop-previous`, stops and uploads the existing tracker before creating the new one.
 - [ ] Allows `--attribute KEY=VALUE` only with `--stop-previous`; these overrides apply to the old tracker's uploaded intervals and are not persisted for the new tracker. The same key/value parsing and default-preservation rules as `log` apply.
+- [ ] Allows trailing `KEY=VALUE` pairs only with `--stop-previous`; they follow the same merge and last-occurrence rules as `log` and apply only to the old tracker's uploaded intervals.
 - [ ] If any old interval fails to upload, the old tracker remains inactive with failed intervals and the new tracker is not created. A later `tracker:stop` retries the retained intervals.
 - [ ] `tempo start` is equivalent.
 
@@ -162,12 +171,13 @@ Additional flags: `-d, --description=<value>`, repeatable `-a, --attribute=<KEY=
 
 ### `tempo tracker:stop ISSUE_KEY_OR_ALIAS`
 
-Additional flags: `-d, --description=<value>`, `-r, --remaining-estimate=<value>`, and repeatable `-a, --attribute=<KEY=VALUE>`.
+Additional flags: `-d, --description=<value>`, `-r, --remaining-estimate=<value>`, and repeatable `-a, --attribute=<KEY=VALUE>`. It also accepts trailing `KEY=VALUE` pairs.
 
 - [ ] Applies pause semantics first, then converts each stored interval to a worklog using its start date, start time, and minute duration.
 - [ ] Uses stop's description when supplied; otherwise uses the description saved at start. Passes `--remaining-estimate` to each generated worklog.
 - [ ] Applies the saved work attribute defaults to every uploaded interval, including uploads triggered by `start --stop-previous`.
 - [ ] Applies explicit repeatable `--attribute KEY=VALUE` overrides to every uploaded interval. Explicit keys replace matching defaults; unmentioned keys keep defaults, and an explicit empty value remains empty.
+- [ ] Applies trailing `KEY=VALUE` pairs using the same merge and last-occurrence rules as `log`; both forms may be mixed and apply to every uploaded interval.
 - [ ] Deletes the local tracker only after every interval uploads successfully.
 - [ ] Does not call the write API for intervals shorter than one minute; an empty tracker is cleaned up.
 - [ ] Attempts every interval even when one upload fails. Each successful interval is removed immediately; failed intervals remain in the inactive tracker and the command reports partial failure.
@@ -188,6 +198,7 @@ Additional flags: `-d, --description=<value>`, `-r, --remaining-estimate=<value>
 ## Acceptance Scenarios
 
 - [ ] Run `log` with today, yesterday, `t+N` and `t-N`, an explicit date, a cross-midnight interval, `--start`, a description, an alias, and a remaining estimate.
+- [ ] Run `tasks` first to look up a real Task value, then use trailing attributes with and without `WHEN`; verify mixed attribute forms use the last duplicate key and do not change setup defaults.
 - [ ] Verify invalid duration, zero work duration, invalid date/time, and invalid remaining estimate do not write to the API.
 - [ ] Verify `list` month schedule summaries, an empty day, and verbose description/URL columns.
 - [ ] Delete multiple IDs and verify that a failed middle ID does not block later IDs.

@@ -3,12 +3,15 @@ import { appName } from '../../appName'
 import tempo from '../../tempo'
 import globalFlags from '../../globalFlags'
 import time from '../../time'
-import { parseAttributes } from '../../worklogs/attributes'
+import { parseAttributeArguments } from '../../worklogs/attributes'
 
 export default class Stop extends Command {
+    static strict = false
+    static usage = 'ISSUE_KEY_OR_ALIAS [KEY=VALUE...]'
     static description = '[or stop], stop a tracker and log it'
 
     static examples = [
+        `${appName} stop abc-123 Task=option-id`,
         `${appName} tracker:stop abc-123`,
         `${appName} stop abc-123`,
         `${appName} tracker:stop abc-123 -d "worklog description"`
@@ -32,13 +35,14 @@ export default class Stop extends Command {
     }
 
     async run() {
-        const { args, flags } = await this.parse(Stop)
+        const { args, flags, raw } = await this.parse(Stop)
+        const { attributes } = parseAttributeArguments(raw, 1)
         globalFlags.debug = flags.debug
         await tempo.stopTracker({
             issueKeyOrAlias: args.issue_key_or_alias,
             description: flags.description,
             remainingEstimate: flags['remaining-estimate'],
-            attributes: parseAttributes(flags.attribute),
+            attributes,
             now: time.now()
         })
     }

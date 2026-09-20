@@ -3,13 +3,16 @@ import { appName } from '../../appName'
 import tempo from '../../tempo'
 import globalFlags from '../../globalFlags'
 import time from '../../time'
-import { parseAttributes } from '../../worklogs/attributes'
+import { parseAttributeArguments } from '../../worklogs/attributes'
 
 export default class Start extends Command {
+    static strict = false
+    static usage = 'ISSUE_KEY_OR_ALIAS [--stop-previous [KEY=VALUE...]]'
     static id = 'tracker:start'
     static description = '[or start], start a new tracker'
 
     static examples = [
+        `${appName} start abc-123 --stop-previous Task=option-id`,
         `${appName} tracker:start abc-123`,
         `${appName} start abc-123`,
         `${appName} tracker:start abc-123 -d "worklog description"`
@@ -33,12 +36,14 @@ export default class Start extends Command {
     }
 
     async run() {
-        const { args, flags } = await this.parse(Start)
+        const { args, flags, raw } = await this.parse(Start)
+        const { attributes } = parseAttributeArguments(raw, 1)
+        if (attributes.length && !flags['stop-previous']) this.error('Work attributes on start require --stop-previous and apply to the previous tracker upload only.')
         globalFlags.debug = flags.debug
         await tempo.startTracker({
             issueKeyOrAlias: args.issue_key_or_alias,
             description: flags.description,
-            attributes: parseAttributes(flags.attribute),
+            attributes,
             now: time.now(),
             stopPreviousTracker: flags['stop-previous']
         })

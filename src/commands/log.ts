@@ -3,12 +3,16 @@ import { appName } from '../appName'
 import { trimIndent } from '../trimIndent'
 import tempo from '../tempo'
 import globalFlags from '../globalFlags'
-import { parseAttributes } from '../worklogs/attributes'
+import { parseAttributeArguments } from '../worklogs/attributes'
 
 export default class Log extends Command {
+    static strict = false
+    static usage = 'ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN] [KEY=VALUE...]'
     static description = '[or l], add a new worklog using duration or interval (abc-123 15m or abc-123 11-12:30)'
 
     static examples = [
+        `${appName} log abc-123 1h Task=option-id`,
+        `${appName} log abc-123 1h yesterday Task=option-id Count=0`,
         `${appName} log abc-123 1h `,
         `${appName} l abc-123 1h `,
         `${appName} log abc-123 15m `,
@@ -54,15 +58,16 @@ export default class Log extends Command {
     }
 
     async run() {
-        const { args, flags } = await this.parse(Log)
+        const { args, flags, raw } = await this.parse(Log)
+        const { when, attributes } = parseAttributeArguments(raw, 2, true)
         globalFlags.debug = flags.debug
         await tempo.addWorklog({
             issueKeyOrAlias: args.issue_key_or_alias,
             durationOrInterval: args.duration_or_interval,
-            when: args.when,
+            when,
             description: flags.description,
             startTime: flags.start,
-            attributes: parseAttributes(flags.attribute),
+            attributes,
             remainingEstimate: flags['remaining-estimate']
         })
     }

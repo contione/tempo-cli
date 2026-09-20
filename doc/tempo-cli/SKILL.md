@@ -72,18 +72,26 @@ Record a duration or an interval with `log` (alias `l`):
 tempo log ISSUE-123 1h20m --description "Investigated retries"
 tempo log ISSUE-123 09:40-11:00 2026-09-18
 tempo log ISSUE-123 45m yesterday --start 09:00 --remaining-estimate 2h
-tempo log ISSUE-123 1h --attribute "Task=task-option-id"
+tempo tasks
+tempo log ISSUE-123 1h Task=TASK_VALUE
+tempo log ISSUE-123 1h yesterday Task=TASK_VALUE
 ```
 
-`log` / `l` accept repeatable `-a, --attribute KEY=VALUE` overrides. The value
-must be the immutable Tempo value or ID, especially for dropdown attributes;
-the displayed option label is not accepted as a substitute. An explicit key
-overrides its setup default, while an omitted key keeps the default. Repeated
-keys use the last value. An explicit empty value, such as `--attribute
-Task=`, stays empty and does not fall back to the setup default. Blank keys and
-arguments without `=` are rejected. Only the first `=` separates the key from
-the value, so a value may contain another `=`. These overrides do not change
-the stored defaults or trigger another work-attribute metadata request.
+Run `tempo tasks` before writing when you need a Task value. Its alias is
+`tempo task:list`; it lists Task display labels, immutable Tempo values or IDs,
+and the current setup default. If Task is missing or is not a static attribute,
+it reports that no Task values are available and does not invent values.
+
+`log` / `l` accept trailing `KEY=VALUE` pairs and repeatable
+`-a, --attribute KEY=VALUE` overrides. An optional `WHEN` comes before the
+trailing pairs. The two forms may be mixed; an explicit key overrides its setup
+default, omitted keys keep their defaults, and the last occurrence on the
+command line wins. Use the immutable Tempo value or ID, not a dropdown display
+label. An explicit empty value, such as `Task=`, stays empty and does not fall
+back to the setup default. Blank keys and arguments without `=` are rejected.
+Only the first `=` separates the key from the value, so a value may contain
+another `=`. These overrides do not change stored defaults or trigger another
+work-attribute metadata request.
 
 `WHEN` defaults to today and accepts `YYYY-MM-DD`, `y`, `yesterday`,
 `today+N`, `today-N`, `t+N`, and `t-N`. Durations include `30m`, `2h`, and
@@ -120,17 +128,17 @@ tempo tracker:pause ISSUE-123
 tempo tracker:resume ISSUE-123
 tempo tracker:list
 tempo tracker:stop ISSUE-123 --remaining-estimate 2h
-tempo stop ISSUE-123 --attribute "Task=task-option-id"
+tempo stop ISSUE-123 Task=TASK_VALUE
 ```
 
 The short commands are `start`, `pause`, `resume`, and `stop`. Use
 `--stop-previous` with `tracker:start` to finish an existing tracker for the
 same issue before starting a new one; this option also uploads worklogs.
-A `--attribute KEY=VALUE` override may be supplied to `start` / `tracker:start`
-only with `--stop-previous`. It applies to the old tracker's uploaded
-intervals and is not persisted for the new tracker. `stop` / `tracker:stop`
-accept the same repeatable override and apply it to every interval uploaded by
-that stop. Unmentioned attributes continue to use setup defaults.
+A trailing `KEY=VALUE` pair or `--attribute KEY=VALUE` may be supplied to
+`start` / `tracker:start` only with `--stop-previous`. It applies to the old
+tracker's uploaded intervals and is not persisted for the new tracker.
+`stop` / `tracker:stop` accept both forms and apply them to every interval
+uploaded by that stop. Unmentioned attributes continue to use setup defaults.
 A stop attempts every stored interval;
 successful intervals are removed immediately and failed intervals remain for a
 later retry. `tracker:delete` removes only the local tracker and does not call

@@ -50,6 +50,18 @@ Saved work attribute defaults are sent automatically by `tempo log`, `tempo stop
 
 Create tokens from [Atlassian account security](https://id.atlassian.com/manage-profile/security/api-tokens) and the Tempo API integration settings for your Jira site.
 
+For a one-off override, attributes can also be written as trailing `KEY=VALUE` arguments. Put an optional `WHEN` before them. The two forms can be mixed; when a key is repeated, the last occurrence on the command line wins. These arguments do not change the saved setup defaults.
+
+## Task Values
+
+Use the read-only Task lookup before writing a worklog:
+
+```bash
+tempo tasks
+```
+
+`tempo task:list` is the equivalent command. The output shows each Task display label, its immutable Tempo value or ID, and which value is the current setup default. Copy the actual value into a trailing attribute pair; do not use the display label. If Task is missing or is not a static attribute, the command reports that no Task values are available and does not invent values.
+
 ## Quick Start
 
 The following examples use sample issue keys and worklog IDs:
@@ -58,8 +70,9 @@ The following examples use sample issue keys and worklog IDs:
 # Record a duration with a description.
 tempo log NOVA-318 1h20m --description "Investigated webhook retries"
 
-# Override one work attribute for this worklog; use its immutable Tempo value.
-tempo log NOVA-318 1h20m --attribute "Task=task-option-id"
+# Look up the immutable Task value first, then use it as a trailing attribute.
+tempo tasks
+tempo log NOVA-318 1h20m Task=TASK_VALUE
 
 # Record an explicit interval on a specific date.
 tempo log NOVA-318 09:40-11:00 2026-09-18
@@ -90,7 +103,7 @@ tempo tracker:resume NOVA-318
 tempo tracker:list
 tempo tracker:stop NOVA-318 --remaining-estimate 2h
 # Alternatively, override Task when stopping.
-tempo stop NOVA-318 --attribute "Task=task-option-id"
+tempo stop NOVA-318 Task=TASK_VALUE
 tempo tracker:delete NOVA-318
 ```
 
@@ -99,7 +112,7 @@ Use `--stop-previous` to finish an existing tracker before starting another one 
 ```bash
 tempo tracker:start NOVA-318 --stop-previous
 # The override applies only while uploading the old tracker.
-tempo start NOVA-318 --stop-previous --attribute "Task=task-option-id"
+tempo start NOVA-318 --stop-previous Task=TASK_VALUE
 ```
 
 The short tracker aliases are `start`, `pause`, `resume`, and `stop`.
@@ -121,6 +134,7 @@ Aliases can be used anywhere an issue key is accepted, including all tracker com
 | --- | --- |
 | `setup` | Configure Jira and Tempo credentials. |
 | `log` / `l` | Add a worklog from a duration or interval. |
+| `tasks` / `task:list` | List immutable Task values and the setup default. |
 | `list` / `ls` | Show selected-day worklogs and monthly schedule progress. |
 | `delete` / `d` | Delete one or more worklogs by ID. |
 | `alias:set` | Store an issue alias. |
