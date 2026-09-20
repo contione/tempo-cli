@@ -20,6 +20,8 @@ import fnsLightFormat from 'date-fns/lightFormat'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
 import { Interval } from 'date-fns'
 import type { WorkAttributeValue } from './api/api'
+import { resolveListPeriod } from './worklogs/listPeriod'
+import time from './time'
 
 export default {
 
@@ -71,12 +73,14 @@ export default {
         return allSucceeded
     },
 
-    async listUserWorklogs(when?: string, verbose = false) {
+    async listUserWorklogs(when?: string, verbose = false, to?: string) {
         return execute(async () => {
+            const period = resolveListPeriod(time.now(), when, to)
             cli.action.start('Loading worklogs')
-            const userWorklogs = await worklogs.getUserWorklogs(when)
+            const table = period.isRange
+                ? await worklogsTable.renderRange(await worklogs.getUserWorklogsRange(period.from, period.to), verbose)
+                : await worklogsTable.render(await worklogs.getUserWorklogs(fnsLightFormat(period.from, 'yyyy-MM-dd')), verbose)
             cli.action.stop('Done.')
-            const table = await worklogsTable.render(userWorklogs, verbose)
             console.log(table.toString())
         })
     },

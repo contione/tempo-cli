@@ -2,11 +2,39 @@ import cliTruncate from 'cli-truncate'
 import Table, { HorizontalTable, Cell } from 'cli-table3'
 import format from 'date-fns/format'
 import chalk from 'chalk'
-import { UserWorklogs, Worklog } from './worklogs'
+import { UserWorklogs, UserWorklogRange, Worklog } from './worklogs'
 import issueKeyExtended, { AliasesPosition } from '../issueKeyExtended'
 
 // How many columns should be removed, when verbose mode is off
 const COLUMNS_TO_REMOVE = 2
+
+export async function renderRange(range: UserWorklogRange, verbose = false) {
+    const { worklogHeaders, columnsNumber } = generateWorklogHeaders(verbose)
+    const table = new Table() as HorizontalTable
+    table.push([{ colSpan: columnsNumber, hAlign: 'center', content: chalk.bold(
+        `${format(range.from, 'yyyy-MM-dd')} to ${format(range.to, 'yyyy-MM-dd')}`
+    ) }])
+    for (const day of range.days) {
+        table.push(
+            [{ colSpan: columnsNumber, hAlign: 'center', content: chalk.bold(format(day.date, 'eeee, yyyy-MM-dd')) }],
+            worklogHeaders,
+            ...await generateContent(day.worklogs, verbose, columnsNumber),
+            rangeSummaryFooter('Day', day.loggedDuration, day.requiredDuration, columnsNumber)
+        )
+    }
+    if (range.days.length === 0) {
+        table.push(worklogHeaders, ...await generateContent([], verbose, columnsNumber))
+    }
+    table.push(rangeSummaryFooter('Range', range.loggedDuration, range.requiredDuration, columnsNumber))
+    return table
+}
+
+function rangeSummaryFooter(label: string, logged: string, required: string, columns: number): Cell[] {
+    return [
+        { colSpan: columns - 1, content: `${label}: required ${required}, logged:`, hAlign: 'right' },
+        { content: chalk.yellow(logged), hAlign: 'right' }
+    ]
+}
 
 export async function render(userWorklogs: UserWorklogs, verbose: boolean = false) {
     const { worklogHeaders, columnsNumber } = generateWorklogHeaders(verbose)

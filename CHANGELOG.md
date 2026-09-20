@@ -4,6 +4,13 @@ All notable changes to `@contione/tempo-cli` are documented here. Release versio
 
 ## [Unreleased]
 
+### List date ranges (0.1.5)
+
+- Added inclusive start/end dates and recent-day, week, and month shortcuts to `list` / `ls`.
+- Group range worklogs by date and weekday with daily and full-range scheduled/logged totals, including ranges across months.
+- Preserve default-today and single-day monthly summaries, verbose output, existing aliases, and all write and tracker workflows.
+- Reuse API pagination and resolve each distinct Jira issue only once per range.
+
 ### Review fixes
 
 - Updated vulnerable transitive dependency patches; the production dependency audit reports no remaining advisories.

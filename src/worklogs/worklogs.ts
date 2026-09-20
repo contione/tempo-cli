@@ -47,6 +47,19 @@ export type UserWorklogs = {
     scheduleDetails: ScheduleDetails
 }
 
+export type UserWorklogRange = {
+    from: Date,
+    to: Date,
+    days: {
+        date: Date,
+        worklogs: Worklog[],
+        loggedDuration: string,
+        requiredDuration: string
+    }[],
+    loggedDuration: string,
+    requiredDuration: string
+}
+
 export default {
 
     async addWorklog(input: AddWorklogInput): Promise<Worklog> {
@@ -97,6 +110,46 @@ export default {
         return worklog
     },
 
+    async getUserWorklogsRange(from: Date, to: Date): Promise<UserWorklogRange> {
+        await checkTokens()
+        const credentials = await authenticator.getCredentials()
+        const fromDate = format(from, DATE_FORMAT)
+        const toDate = format(to, DATE_FORMAT)
+        const [worklogsResponse, scheduleResponse] = await Promise.all([
+            api.getWorklogs({ fromDate, toDate }),
+            api.getUserSchedule({ fromDate, toDate })
+        ])
+        const selected = worklogsResponse.results
+            .filter(e => e.author.accountId === credentials.accountId && e.startDate >= fromDate && e.startDate <= toDate)
+            .sort((a, b) => b.startDate.localeCompare(a.startDate) || a.startTime.localeCompare(b.startTime))
+        const entries = await generateWorklogs({ results: selected }, fromDate, toDate)
+        const requiredByDate = new Map<string, number>()
+        for (const entry of scheduleResponse.results) {
+            if (entry.date >= fromDate && entry.date <= toDate) {
+                requiredByDate.set(entry.date, (requiredByDate.get(entry.date) ?? 0) + entry.requiredSeconds)
+            }
+        }
+        const groups = new Map<string, { worklogs: Worklog[], seconds: number }>()
+        selected.forEach((entity, index) => {
+            const group = groups.get(entity.startDate) ?? { worklogs: [], seconds: 0 }
+            group.worklogs.push(entries[index])
+            group.seconds += entity.timeSpentSeconds
+            groups.set(entity.startDate, group)
+        })
+        return {
+            from,
+            to,
+            days: [...groups].map(([date, group]) => ({
+                date: fnsParse(date, DATE_FORMAT, from),
+                worklogs: group.worklogs,
+                loggedDuration: timeParser.toDuration(group.seconds),
+                requiredDuration: timeParser.toDuration(requiredByDate.get(date) ?? 0)
+            })),
+            loggedDuration: timeParser.toDuration(selected.reduce((sum, entry) => sum + entry.timeSpentSeconds, 0)),
+            requiredDuration: timeParser.toDuration([...requiredByDate.values()].reduce((sum, seconds) => sum + seconds, 0))
+        }
+    },
+
     async getUserWorklogs(when?: string): Promise<UserWorklogs> {
         await checkTokens()
         const credentials = await authenticator.getCredentials()
@@ -132,11 +185,11 @@ function remainingEstimateSeconds(referenceDate: Date, remainingEstimate?: strin
     return undefined
 }
 
-async function generateWorklogs(worklogsResponse: GetWorklogsResponse, formattedDate: string): Promise<Worklog[]> {
+async function generateWorklogs(worklogsResponse: GetWorklogsResponse, fromDate: string, toDate = fromDate): Promise<Worklog[]> {
     const credentials = await authenticator.getCredentials()
 
     const selectedWorklogs = worklogsResponse.results
-        .filter(e => e.author.accountId === credentials.accountId && e.startDate === formattedDate)
+        .filter(e => e.author.accountId === credentials.accountId && e.startDate >= fromDate && e.startDate <= toDate)
     const uniqueIssueIds = [...new Set(selectedWorklogs.map(worklog => worklog.issue.id))]
     const issueKeys = await Promise.all(uniqueIssueIds.map(issueId => api.getIssueKey(issueId)))
     const issueIdToKey = Object.fromEntries(uniqueIssueIds.map((id, index) => [id, issueKeys[index]]))

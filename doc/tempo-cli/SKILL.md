@@ -105,9 +105,48 @@ tempo list
 tempo list 2026-09-18 --verbose
 ```
 
-The command fetches the month containing the selected date, then displays the
-current user's worklogs for that date plus schedule totals. `--verbose` adds
-descriptions and issue links. Delete one or more remote worklogs by ID with:
+The no-argument form remains today's single-day view. A single-day value may be
+`YYYY-MM-DD`, `t`, `today`, `y`, `yesterday`, `t+N`, `today+N`, `t-N`, or
+`today-N`. The command fetches the month containing the selected date, then
+displays the current user's worklogs for that date plus the existing monthly
+schedule summary and selected-day footer. `--verbose` adds descriptions and
+issue links.
+
+Use two endpoints for an inclusive range:
+
+```text
+tempo list 2026-09-01 2026-09-20
+tempo list t-6 t
+```
+
+Both endpoints accept a calendar date or a single-day shortcut. The start date
+must not be after the end date. One-argument range shortcuts are also
+available:
+
+```text
+tempo list 7d
+tempo list 7day
+tempo list 7days
+tempo list last7days
+tempo list this-week
+tempo list lastweek
+tempo list this-month
+tempo list lastmonth
+```
+
+`Nd`, `Nday`, `Ndays`, and `lastNdays` accept a positive integer `N` and
+include today. `week`, `this-week`, and `thisweek` mean the current Monday
+through Sunday week; `last-week` and `lastweek` mean the previous week.
+`month`, `this-month`, and `thismonth` mean the current calendar month;
+`last-month` and `lastmonth` mean the previous month. A range shortcut cannot
+be followed by a second endpoint, and these range forms apply to `list` / `ls`
+only.
+
+Range output groups dates from newest to oldest, orders worklogs within each
+date by time, shows the weekday and daily logged/required total, and ends with
+logged/required totals for the entire range. A range crossing months uses the
+range total instead of a single-month summary. `--verbose`, `--debug`, and `ls`
+continue to work for ranges. Delete one or more remote worklogs by ID with:
 
 ```text
 tempo delete 931842 931859

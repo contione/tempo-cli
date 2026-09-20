@@ -18,7 +18,7 @@ This document is the acceptance checklist for `@contione/tempo-cli`. It records 
 | --- | --- | --- |
 | `tempo log` | `tempo l` | `ISSUE_KEY_OR_ALIAS DURATION_OR_INTERVAL [WHEN] [KEY=VALUE...]` |
 | `tempo tasks` | `tempo task:list` | none |
-| `tempo list` | `tempo ls` | `[WHEN]` |
+| `tempo list` | `tempo ls` | `[WHEN] [TO]` |
 | `tempo delete` | `tempo d` | `WORKLOG_ID...` |
 | `tempo tracker:start` | `tempo start` | `ISSUE_KEY_OR_ALIAS` |
 | `tempo tracker:pause` | `tempo pause` | `ISSUE_KEY_OR_ALIAS` |
@@ -97,7 +97,7 @@ Acceptance behavior:
 
 ## Worklog Listing and Deletion
 
-### `tempo list [WHEN]`
+### `tempo list [WHEN] [TO]`
 
 Flags:
 
@@ -106,10 +106,18 @@ Flags:
 
 Acceptance behavior:
 
-- [ ] Uses the same date parser as `log`; the default is today.
-- [ ] Requests the full month containing the selected date for worklogs and user schedule, then displays only the current user's worklogs for the selected date.
+- [ ] The default is today and remains a single-day view.
+- [ ] A single-day `WHEN` accepts `YYYY-MM-DD`, `t`, `today`, `y`, `yesterday`, `t+N`, `today+N`, `t-N`, and `today-N`; `N` is a non-negative day offset. Existing single-day behavior is preserved.
+- [ ] A two-argument form `WHEN TO` requests an inclusive range. Both endpoints accept a calendar date or a single-day shortcut, and the start date cannot be after the end date.
+- [ ] A one-argument range shortcut accepts `Nd`, `Nday`, `Ndays`, or `lastNdays` for a positive integer `N`, with today included; `7d`, `7day`, `7days`, and `last7days` are equivalent examples.
+- [ ] A one-argument `week`, `this-week`, or `thisweek` selects Monday through Sunday of the current week; `last-week` and `lastweek` select the previous week.
+- [ ] A one-argument `month`, `this-month`, or `thismonth` selects the current calendar month; `last-month` and `lastmonth` select the previous calendar month.
+- [ ] Range shortcuts cannot be followed by `TO`, and range syntax is supported by `list` / `ls` only; `log` remains a single-worklog command.
+- [ ] Requests the full month containing a selected single day for worklogs and user schedule, then displays only the current user's worklogs for that day.
 - [ ] The default table contains ID, interval, issue, and duration. Verbose mode adds description and issue URL.
-- [ ] The header shows month logged/required time and current-period difference; the footer shows selected-day required/logged time.
+- [ ] A single-day header shows month logged/required time and current-period difference; its footer shows selected-day required/logged time.
+- [ ] A range groups worklogs by date in descending date order, orders entries within each date by time, shows each date's weekday and daily logged/required total, and ends with logged/required totals for the entire range.
+- [ ] A range spanning multiple months uses the requested-range totals and does not show a single-month summary.
 - [ ] Shows `No worklogs` for an empty selected day while retaining schedule and summary information.
 - [ ] Displays aliases alongside issue keys and marks gaps between adjacent intervals using the original highlighted output behavior.
 - [ ] `tempo ls` is equivalent to `tempo list`.

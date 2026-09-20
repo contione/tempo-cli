@@ -82,6 +82,13 @@ tempo log NOVA-318 09:40-11:00 2026-09-18
 # Review the selected day and include descriptions and issue links.
 tempo list 2026-09-18 --verbose
 
+# Review the last seven days or an explicit inclusive range.
+tempo list 7d
+tempo list t-6 t
+
+# Review the current Monday-to-Sunday week.
+tempo ls this-week
+
 # Delete one or more worklogs.
 tempo delete 931842 931859
 ```
@@ -90,7 +97,19 @@ A successful log prints the recorded duration, issue key, and a delete command f
 
 ## Dates and Time Inputs
 
-`log` and `list` accept `WHEN` as `YYYY-MM-DD`, `y`, `yesterday`, `t+N`, `today+N`, `t-N`, or `today-N`. `N` is a non-negative day offset; `t+0` and `today-0` mean today.
+`log` accepts `WHEN` as `YYYY-MM-DD`, `y`, `yesterday`, `t+N`, `today+N`, `t-N`, or `today-N`. `N` is a non-negative day offset; `t+0` and `today-0` mean today.
+
+`list` with no date still shows today. Its single-day forms are `YYYY-MM-DD`, `t`, `today`, `y`, `yesterday`, `t+N`, `today+N`, `t-N`, and `today-N`; `N` is a non-negative day offset. Single-day output keeps the existing monthly schedule summary and selected-day footer.
+
+Use `tempo list WHEN TO` for an inclusive date range. Both endpoints may be a calendar date or a single-day shortcut, for example `tempo list 2026-09-01 2026-09-20` or `tempo list t-6 t`. The start date must not be after the end date.
+
+The following one-argument shortcuts select ranges and cannot be followed by `TO`:
+
+- `Nd`, `Nday`, `Ndays`, or `lastNdays`, where `N` is a positive integer and the range contains today. For example, `7d`, `7day`, `7days`, and `last7days` mean the latest seven calendar days including today.
+- `week`, `this-week`, or `thisweek` for the current Monday through Sunday week; `last-week` or `lastweek` for the previous one.
+- `month`, `this-month`, or `thismonth` for the current calendar month; `last-month` or `lastmonth` for the previous one.
+
+Range results are grouped by date from newest to oldest. Each date shows its weekday, worklogs in time order, and a daily logged/required total. The final summary shows logged/required time for the whole range; ranges crossing month boundaries use this range total instead of a monthly summary. These range forms apply to `list` / `ls` only; `log` remains a single-worklog command. The no-argument `list` form remains a single-day view and is not changed to a seven-day default.
 
 Durations include `30m`, `2h`, and `1h15m`. Intervals include `09:40-11:00`, `9-12:30`, and `23:30-00:30`. When a duration is used, `--start` sets its start time. `--remaining-estimate` accepts the same duration syntax, including `0h`.
 
@@ -137,7 +156,7 @@ Aliases can be used anywhere an issue key is accepted, including all tracker com
 | `setup` | Configure Jira and Tempo credentials. |
 | `log` / `l` | Add a worklog from a duration or interval. |
 | `tasks` / `task:list` | List immutable Task values and the setup default. |
-| `list` / `ls` | Show selected-day worklogs and monthly schedule progress. |
+| `list` / `ls` | Show selected-day worklogs or an inclusive date range with schedule progress. |
 | `delete` / `d` | Delete one or more worklogs by ID. |
 | `alias:set` | Store an issue alias. |
 | `alias:list` | Print stored aliases. |
