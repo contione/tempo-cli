@@ -1,92 +1,66 @@
 # Changelog
 
-All notable changes to `@contione/tempo-cli` are documented here. Release versions follow [Semantic Versioning](https://semver.org/).
+Changes to `@contione/tempo-cli`, based on this repository's Git history starting on September 19, 2026. Dates use Asia/Shanghai (UTC+08:00). Versions identify the package version in each commit; they do not indicate an npm publication.
 
-## [Unreleased]
+## 2026-09-20
 
-### List date ranges (0.1.5)
+### 0.1.5 — Date ranges and shortcuts
 
-- Added inclusive start/end dates and recent-day, week, and month shortcuts to `list` / `ls`.
-- Group range worklogs by date and weekday with daily and full-range scheduled/logged totals, including ranges across months.
-- Preserve default-today and single-day monthly summaries, verbose output, existing aliases, and all write and tracker workflows.
-- Reuse API pagination and resolve each distinct Jira issue only once per range.
+[Commit 8ae4c23](https://github.com/contione/tempo-cli/commit/8ae4c23)
 
-### Review fixes
+- Added inclusive start/end dates to `list` / `ls`.
+- Added recent-day shortcuts such as `7d`, `7day`, `7days`, and `last7days`, plus current/previous week and month shortcuts.
+- Grouped range results by date and weekday, with daily and full-range scheduled/logged totals.
+- Preserved default-today behavior, single-day monthly summaries, verbose output, and existing commands.
 
-- Updated vulnerable transitive dependency patches; the production dependency audit reports no remaining advisories.
-- Preserve dates supplied through stdin when parsing trailing work attributes.
-- Block account/site switches while local trackers remain, preserving their original identity.
-- Return nonzero command exit codes for business failures and partially failed batch operations.
-- Await worklog and tracker listing operations, and stop `start --stop-previous` immediately if the old upload fails.
-- Reject unexpected setup arguments before opening the credential prompts.
+### 0.1.4 — Reliability fixes
 
-### Work Attributes
+[Commit bf7feae](https://github.com/contione/tempo-cli/commit/bf7feae)
 
-- Added a fifth setup step to choose default Tempo work attributes, including required Task dropdowns.
-- Save immutable dropdown values locally and include defaults in direct worklogs and every tracker upload without additional metadata requests.
-- Added repeatable per-command `--attribute KEY=VALUE` overrides for `log` and `stop`; `start --stop-previous` can apply overrides to the old tracker's upload without changing saved defaults.
-- Added trailing `KEY=VALUE` work attribute arguments, optional `WHEN` placement before them, and the read-only `tasks` / `task:list` lookup for real Task values.
-- Keep existing settings when setup cannot finish, and suggest setup when Tempo rejects a work attribute.
+- Preserved dates supplied through stdin when using trailing work attributes.
+- Blocked Jira account/site changes while local trackers remain.
+- Returned nonzero exit codes for failed operations, including partial batch failures.
+- Awaited list operations and prevented a new tracker from starting when `--stop-previous` fails.
+- Rejected unexpected setup arguments before prompting and updated vulnerable transitive dependencies.
 
-### Performance
+### 0.1.3 — Task lookup and trailing attributes
 
-- Generate an oclif command manifest during build and packaging to avoid loading every command at startup.
-- Pin the original oclif versions to avoid the Windows startup regression introduced by the framework upgrade.
-- Load alias storage directly and import only the date helpers needed at runtime.
-- Resolve Jira issue keys only for the selected day's worklogs; monthly totals still use the full month.
+[Commit a709973](https://github.com/contione/tempo-cli/commit/a709973)
 
-### Documentation
+- Added `tasks` / `task:list` to display Task labels, immutable values, and the saved default.
+- Added trailing `KEY=VALUE` arguments to `log`, `stop`, and `start --stop-previous`, including support for mixing them with attribute flags.
 
-- Added a reusable CLI usage skill at `doc/tempo-cli/SKILL.md` and local build/run instructions.
+### 0.1.2 — Per-command attribute overrides
 
-- Rewrote the user guide and compatibility contract in English.
-- Added original, concise command examples for the installed `tempo` command.
-- Corrected command examples to use the installed `tempo` command consistently.
-- Documented the `main` branch check/build flow and `v*` tag publishing flow.
+[Commit c24946a](https://github.com/contione/tempo-cli/commit/c24946a)
 
-### Compatibility
+- Added repeatable `--attribute KEY=VALUE` overrides to `log` and `stop`, and to the old tracker upload in `start --stop-previous`.
+- Kept saved defaults for unspecified keys without changing the stored configuration.
 
-- Preserved the original worklog, schedule, alias, batch delete, and six-command tracker workflows.
-- Documented relative dates, descriptions, remaining estimates, verbose listing, shell completion, and tracker retry behavior.
+### 0.1.1 — Default work attributes
 
-## [0.1.0]
+[Commit 873c63c](https://github.com/contione/tempo-cli/commit/873c63c)
 
-### Added
+- Added a fifth setup step to choose default Tempo work attributes, including required Task values.
+- Stored immutable dropdown values and reused them for direct worklogs and tracker uploads.
+- Saved setup changes only after all steps succeed and added guidance for missing or invalid work attributes.
 
-- Initial `@contione/tempo-cli` package line for the `contione/tempo-cli` repository.
-- The single installed `tempo` command.
-- Jira `/rest/api/3/myself` lookup during setup to discover the authenticated `accountId`.
-- JSON configuration at `~/.tempo-cli.json`.
-- Modern Node.js 22.12+ TypeScript and oclif runtime target.
+### 0.1.0 — Startup and documentation updates
 
-### Compatibility
+[Commit fda396c](https://github.com/contione/tempo-cli/commit/fda396c). The package version remained `0.1.0` in this commit.
 
-- Tempo REST API v4 worklog integration.
-- Atlassian REST API v3 issue lookup.
-- Worklog duration and interval parsing, aliases, monthly schedule summaries, and verbose output.
-- Local trackers with pause, resume, stop, interval-level failure retention, and retry.
+- Fixed the Windows startup regression by pinning compatible oclif versions, generating a command manifest, and reducing unnecessary imports.
+- Resolved Jira issue keys only for the selected day's worklogs while retaining monthly totals.
+- Added local build/run instructions and the CLI usage skill at `doc/tempo-cli/SKILL.md`.
 
-## Legacy Baseline
+## 2026-09-19
 
-The following changes describe the behavior inherited from the original CLI implementation.
+### 0.1.0 — Initial repository
 
-### 2.0.1 - 2025-12-04
+[Initial commit efb5dbd](https://github.com/contione/tempo-cli/commit/efb5dbd) and [command-name fix b1b8b8f](https://github.com/contione/tempo-cli/commit/b1b8b8f).
 
-- Updated setup handling for the current Jira profile URL structure.
-
-### 2.0.0 - 2025-04-08
-
-- Migrated from Tempo API v3 to v4.
-- Switched worklog writes from issue keys to Jira issue IDs.
-- Added Atlassian API integration for issue ID lookup.
-- Added Atlassian email and API token requirements to setup.
-
-### 1.1.0 - 2020-08-13
-
-- Added local time trackers.
-- Added alias display in worklog tables.
-- Improved setup instructions, error handling, and time handling.
-
-### 1.0.5 - 2020-07-29
-
-- Initial public release.
+- Created the TypeScript/Node.js CLI repository and `@contione/tempo-cli` package configuration.
+- Integrated Tempo REST API v4 and Jira REST API v3, including Jira account lookup during setup.
+- Included worklog creation, listing and deletion, monthly schedule summaries, issue aliases, and local trackers with pause/resume and retryable uploads.
+- Added local configuration storage, English documentation, tests, and GitHub CI/release workflows.
+- Corrected the installed executable to `tempo` as the only command name.
